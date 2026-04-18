@@ -9,7 +9,7 @@ import aiohttp
 import random
 from pathlib import Path
 
-@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动发题插件！", "v1.0-beta", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+@register("入群做题", "语芮澈", "功能完善的入群自动发题插件！", "v1.0-beta", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
