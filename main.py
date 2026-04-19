@@ -3,8 +3,11 @@ from astrbot.api.star import Context, Star, register
 from astrbot.api import AstrBotConfig
 from astrbot.api import logger # 使用 astrbot 提供的 logger 接口
 import astrbot.api.message_components as Comp
+from astrbot.api.message_components import Plain
 import json
 import os
+import time
+from itertools import islice
 import aiohttp
 import random
 from pathlib import Path
@@ -79,18 +82,58 @@ class MyPlugin(Star):
                 yield event.chain_result(chain)
         # ====================开始发放题目====================
         if self.randomly_selected_questions:# 如果开启随机抽题
+            out = ""
+            check = ""
             for i in range(int(self.finally_questions)):
                 line = random.randint(1, int(self.total_number_of_questions))
                 line_list = []
                 line_list.append(int(line))
                 if line in line_list:
-                    pass
+                    line_list.pop()
+                    continue
+                else:
+                    # 问题
+                    try:
+                        with open(self.question, 'r', encoding='utf-8') as f:
+                            q = next(islice(f, line - 1, line), None)
+                            if q:
+                                q = q.rstrip('\n')
+                    except FileNotFoundError:
+                        yield event.chain_result(f"文件不存在: {self.question}")
+                    except Exception as e:
+                        yield event.chain_result(f"读取文件出错: {e}")
+                    # 选项
+                    try:
+                        with open(self.question, 'r', encoding='utf-8') as f:
+                            o = next(islice(f, line - 1, line), None)
+                            if o:
+                                o = o.rstrip('\n')
+                    except FileNotFoundError:
+                        yield event.chain_result(f"文件不存在: {self.question}")
+                    except Exception as e:
+                        yield event.chain_result(f"读取文件出错: {e}")
+                    # 答案
+                    try:
+                        with open(self.question, 'r', encoding='utf-8') as f:
+                            a = next(islice(f, line - 1, line), None)
+                            if a:
+                                a = a.rstrip('\n')
+                    except FileNotFoundError:
+                        yield event.chain_result(f"文件不存在: {self.question}")
+                    except Exception as e:
+                        yield event.chain_result(f"读取文件出错: {e}")
+                    a = a.replace('|', '\n')
+                    out = str(out) + f"\n{str(q)}\n{str(o)}\n"
+                    check = str(check) + f"{str(a)}"
+            temporary_umo = f"aiocqhttp_default:private:{user_id}_{self.examine_group_id}"
+            time.sleep(60)
+            await self.context.send_message(temporary_umo, [Plain(out)])
         else:# 没开启随机抽题
             pass
 
-    @filter.command("开始答题")
-    async def start_answer(self, event: AstrMessageEvent):
-        """开始作答题目"""
+    @filter.command("作答")
+    async def now_answer(self, event: AstrMessageEvent):
+        """输入题目的答案"""
         pass
 
 
