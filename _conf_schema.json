@@ -18,7 +18,7 @@
       "reminder_text": {
         "description": "提示文本",
         "type": "text",
-        "default": "欢迎！请私聊给bot发送“开始答题”以作答！"
+        "default": "注意！进群就相当于开始答题！题目将于1min后发放至你的私聊，请于规定时间内完成答题"
       },
       "reminder_img": {
         "description": "提示图片",
@@ -67,6 +67,12 @@
         "type": "bool",
         "hint": "是否需要进行随机抽题，默认关闭",
         "default": false
+      },
+      "finally_questions": {
+        "description": "目标题数",
+        "type": "int",
+        "hint": "如果开启了随机抽题，此数值为最终输出的题目数量",
+        "default": 15
       }
     }
   },

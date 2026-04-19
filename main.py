@@ -17,24 +17,25 @@ class MyPlugin(Star):
         self.main_group_id = config.get("main_group_id", "")
         self.examine_group_id = config.get("examine_group_id", "")
         entry = config.get("group_entry_reminder") or {}
-        self.reminder_text = entry.get("reminder_text", "欢迎！请私聊给bot发送“开始答题”以作答！")
+        self.reminder_text = entry.get("reminder_text", "注意！进群就相当于开始答题！题目将于1min后发放至你的私聊，请于规定时间内完成答题")
         self.reminder_imgs = entry.get("reminder_img", "")
         self.whether_at = entry.get("whether_at", False)
         answer = config.get("answer") or {}
-        self.total_questions = answer.get("total_number_of_questions", 0)
+        self.total_number_of_questions = answer.get("total_number_of_questions", 0)
         self.total_score = answer.get("total_score", 100)
         self.passing_line = answer.get("passing_line", 60)
         self.limited_time = answer.get("limited_time", 100)
-        self.random_select = answer.get("randomly_selected_questions", False)
+        self.randomly_selected_questions = answer.get("randomly_selected_questions", False)
+        self.finally_questions = answer.get("finally_questions", 15)
         bank = config.get("question_bank") or {}
-        self.question_path = bank.get("question", "")
-        self.option_path = bank.get("option", "")
-        self.answer_path = bank.get("answer", "")
+        self.question = bank.get("question", "")
+        self.option = bank.get("option", "")
+        self.answer = bank.get("answer", "")
 
     @filter.event_message_type(filter.EventMessageType.ALL)  # 监听所有类型的消息事件（包括群消息、私聊、通知等）
     async def handle_group_add(self, event: AstrMessageEvent):
         """入群提示"""
-        # ==================== 第一部分：事件类型校验 ====================
+        # =====================事件类型校验====================
         # 检查事件对象是否包含原始消息数据
         if not hasattr(event, "message_obj") or not hasattr(event.message_obj, "raw_message"):
             return  # 没有原始消息数据，说明不是需要处理的通知类型，直接退出
@@ -44,14 +45,14 @@ class MyPlugin(Star):
         # 只处理通知类事件（notice），不处理消息类事件
         if raw_message.get("post_type") != "notice":
             return
-        # ==================== 第二部分：处理群成员增加（入群）事件 ====================
+        # ====================处理群成员入群事件====================
         if raw_message.get("notice_type") == "group_increase":  # 群人数增加 → 新人入群
             user_id = raw_message.get("user_id")  # 获取新成员的QQ号
             # 默认使用全局欢迎语
-            welcome_message = self.group_entry_reminder
+            welcome_message = self.reminder_text
             # 确定最终使用的图片
             image_to_use = self.reminder_img
-            # ========== 构建并发送欢迎消息 ==========
+            # ====================构建并发送欢迎消息====================
             if image_to_use:  # 如果有欢迎图片
                 # 判断图片是URL还是本地路径（只能使用本地路径）
                 if image_to_use.startswith("http://") or image_to_use.startswith("https://"):
@@ -76,6 +77,22 @@ class MyPlugin(Star):
                     Comp.Plain(welcome_message),
                 ]
                 yield event.chain_result(chain)
+        # ====================开始发放题目====================
+        if self.randomly_selected_questions:# 如果开启随机抽题
+            for i in range(int(self.finally_questions)):
+                line = random.randint(1, int(self.total_number_of_questions))
+                line_list = []
+                line_list.append(int(line))
+                if line in line_list:
+                    pass
+        else:# 没开启随机抽题
+            pass
+
+    @filter.command("开始答题")
+    async def start_answer(self, event: AstrMessageEvent):
+        """开始作答题目"""
+        pass
+
 
     async def terminate(self):
         '''当插件被卸载或停用时调用，用于释放资源（如关闭数据库连接、停止定时任务等）'''
