@@ -51,7 +51,7 @@ class MyPlugin(Star):
             # 默认使用全局欢迎语
             welcome_message = self.reminder_text
             # 确定最终使用的图片
-            image_to_use = self.reminder_img
+            image_to_use = self.reminder_imgs
             # ====================构建并发送欢迎消息====================
             if image_to_use:  # 如果有欢迎图片
                 # 判断图片是URL还是本地路径（只能使用本地路径）
