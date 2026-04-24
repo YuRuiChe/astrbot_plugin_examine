@@ -19,10 +19,10 @@ class MyPlugin(Star):
         self.config = config
         self.main_group_id = config.get("main_group_id", "")
         self.examine_group_id = config.get("examine_group_id", "")
-        entry = config.get("group_entry_reminder") or {}
-        self.reminder_text = entry.get("reminder_text", "注意！进群就相当于开始答题！题目将于1min后发放至你的私聊，请于规定时间内完成答题")
-        self.reminder_imgs = entry.get("reminder_img", "")
-        self.whether_at = entry.get("whether_at", False)
+        group_entry_reminder = config.get("group_entry_reminder") or {}
+        self.reminder_text = group_entry_reminder.get("reminder_text", "注意！进群就相当于开始答题！题目将于1min后发放至你的私聊，请于规定时间内完成答题")
+        self.reminder_imgs = group_entry_reminder.get("reminder_img", "")
+        self.whether_at = group_entry_reminder.get("whether_at", False)
         answer = config.get("answer") or {}
         self.total_number_of_questions = answer.get("total_number_of_questions", 0)
         self.total_score = answer.get("total_score", 100)
@@ -30,10 +30,12 @@ class MyPlugin(Star):
         self.limited_time = answer.get("limited_time", 100)
         self.randomly_selected_questions = answer.get("randomly_selected_questions", False)
         self.finally_questions = answer.get("finally_questions", 15)
-        bank = config.get("question_bank") or {}
-        self.question = bank.get("question", "")
-        self.option = bank.get("option", "")
-        self.answer = bank.get("answer", "")
+        question_bank = config.get("question_bank") or {}
+        self.question = question_bank.get("question", "")
+        self.option = question_bank.get("option", "")
+        self.answer = question_bank.get("answer", "")
+        llm = config.get("llm") or {}
+        self.disable_llm = llm.get("disable_llm", False)
 
     @filter.event_message_type(filter.EventMessageType.ALL)  # 监听所有类型的消息事件（包括群消息、私聊、通知等）
     async def handle_group_add(self, event: AstrMessageEvent):
@@ -125,7 +127,7 @@ class MyPlugin(Star):
                     a = a.replace('|', '\n')
                     out = str(out) + f"\n{str(q)}\n{str(o)}\n"
                     check = str(check) + f"{str(a)}"
-            temporary_umo = f"aiocqhttp_default:private:{user_id}_{self.examine_group_id}"
+            temporary_umo = f"aiocqhttp_default:PRIVATE:{user_id}_{self.examine_group_id}"
             time.sleep(60)
             await self.context.send_message(temporary_umo, [Plain(out)])
         else:# 没开启随机抽题
@@ -135,6 +137,13 @@ class MyPlugin(Star):
     async def now_answer(self, event: AstrMessageEvent):
         """输入题目的答案"""
         pass
+
+    @filter.event_message_type(filter.EventMessageType.ALL)
+    async def intercept_before_llm(self, event: AstrMessageEvent):
+        """阻止llm调用"""
+        # 直接阻止 LLM 调用
+        if self.disable_llm:
+            event.should_call_llm(False)
 
 
     async def terminate(self):
