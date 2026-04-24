@@ -138,17 +138,6 @@ class MyPlugin(Star):
         """输入题目的答案"""
         pass
 
-    @filter.event_message_type(filter.EventMessageType.ALL)
-    async def intercept_before_llm(self, event: AstrMessageEvent):
-        """阻止llm调用"""
-        # 直接阻止 LLM 调用
-        if self.disable_llm:
-            event.should_call_llm(False)
-            logger.info("拦截了一条llm调用！")
-            return
-
-
-
     async def terminate(self):
         '''当插件被卸载或停用时调用，用于释放资源（如关闭数据库连接、停止定时任务等）'''
         logger.info("插件正在终止...")

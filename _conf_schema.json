@@ -99,17 +99,5 @@
         "default": ""
       }
     }
-  },
-  "llm": {
-    "description": "LLM",
-    "type": "object",
-    "items": {
-      "disable_llm": {
-        "description": "禁用llm",
-        "hint": "阻止llm调用，默认关闭（它的存在必有它的用处）",
-        "type": "bool",
-        "default": false
-      }
-    }
   }
 }
