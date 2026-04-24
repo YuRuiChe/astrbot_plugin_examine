@@ -144,6 +144,9 @@ class MyPlugin(Star):
         # 直接阻止 LLM 调用
         if self.disable_llm:
             event.should_call_llm(False)
+            logger.info("拦截了一条llm调用！")
+            return
+
 
 
     async def terminate(self):
