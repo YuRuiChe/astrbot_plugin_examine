@@ -4,6 +4,7 @@ from astrbot.api import AstrBotConfig
 from astrbot.api import logger # 使用 astrbot 提供的 logger 接口
 import astrbot.api.message_components as Comp
 from astrbot.api.message_components import Plain
+from astrbot.core.utils.session_waiter import session_waiter, SessionController  # 会话控制器
 import json
 import os
 import time
@@ -12,7 +13,7 @@ import aiohttp
 import random
 from pathlib import Path
 
-@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动发题插件！", "v1.0-beta", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v1.0-beta", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -20,7 +21,7 @@ class MyPlugin(Star):
         self.main_group_id = config.get("main_group_id", "")
         self.examine_group_id = config.get("examine_group_id", "")
         group_entry_reminder = config.get("group_entry_reminder") or {}
-        self.reminder_text = group_entry_reminder.get("reminder_text", "注意！进群就相当于开始答题！题目将于1min后发放至你的私聊，请于规定时间内完成答题")
+        self.reminder_text = group_entry_reminder.get("reminder_text", "欢迎！请私聊发送“开始答题”以开始测试")
         self.reminder_imgs = group_entry_reminder.get("reminder_img", "")
         self.whether_at = group_entry_reminder.get("whether_at", False)
         answer = config.get("answer") or {}
@@ -82,61 +83,112 @@ class MyPlugin(Star):
                     Comp.Plain(welcome_message),
                 ]
                 yield event.chain_result(chain)
-        # ====================开始发放题目====================
-        if self.randomly_selected_questions:# 如果开启随机抽题
-            out = ""
-            check = ""
-            for i in range(int(self.finally_questions)):
-                line = random.randint(1, int(self.total_number_of_questions))
-                line_list = []
-                line_list.append(int(line))
-                if line in line_list:
-                    line_list.pop()
-                    continue
-                else:
-                    # 问题
-                    try:
-                        with open(self.question, 'r', encoding='utf-8') as f:
-                            q = next(islice(f, line - 1, line), None)
-                            if q:
-                                q = q.rstrip('\n')
-                    except FileNotFoundError:
-                        yield event.chain_result(f"文件不存在: {self.question}")
-                    except Exception as e:
-                        yield event.chain_result(f"读取文件出错: {e}")
-                    # 选项
-                    try:
-                        with open(self.question, 'r', encoding='utf-8') as f:
-                            o = next(islice(f, line - 1, line), None)
-                            if o:
-                                o = o.rstrip('\n')
-                    except FileNotFoundError:
-                        yield event.chain_result(f"文件不存在: {self.question}")
-                    except Exception as e:
-                        yield event.chain_result(f"读取文件出错: {e}")
-                    # 答案
-                    try:
-                        with open(self.question, 'r', encoding='utf-8') as f:
-                            a = next(islice(f, line - 1, line), None)
-                            if a:
-                                a = a.rstrip('\n')
-                    except FileNotFoundError:
-                        yield event.chain_result(f"文件不存在: {self.question}")
-                    except Exception as e:
-                        yield event.chain_result(f"读取文件出错: {e}")
-                    a = a.replace('|', '\n')
-                    out = str(out) + f"\n{str(q)}\n{str(o)}\n"
-                    check = str(check) + f"{str(a)}"
-            temporary_umo = f"aiocqhttp_default:PRIVATE:{user_id}_{self.examine_group_id}"
-            time.sleep(60)
-            await self.context.send_message(temporary_umo, [Plain(out)])
-        else:# 没开启随机抽题
-            pass
 
-    @filter.command("作答")
-    async def now_answer(self, event: AstrMessageEvent):
-        """输入题目的答案"""
-        pass
+    @filter.command("开始答题")
+    async def start_answer(self, event: AstrMessageEvent):
+        """开始答题"""
+        # 判断是否为私聊（私聊包括：普通私聊 + 临时会话）
+        if event.is_private_chat():
+            if self.randomly_selected_questions:  # 如果开启随机抽题
+                out = ""
+                check = ""
+                for i in range(int(self.finally_questions)):
+                    line = random.randint(1, int(self.total_number_of_questions))
+                    line_list = []
+                    line_list.append(int(line))
+                    if line in line_list:
+                        line_list.pop()
+                        continue
+                    else:
+                        # 问题
+                        try:
+                            with open(self.question, 'r', encoding='utf-8') as f:
+                                q = next(islice(f, line - 1, line), None)
+                                if q:
+                                    q = q.rstrip('\n')
+                        except FileNotFoundError:
+                            yield event.chain_result(f"文件不存在: {self.question}")
+                        except Exception as e:
+                            yield event.chain_result(f"读取文件出错: {e}")
+                        # 选项
+                        try:
+                            with open(self.question, 'r', encoding='utf-8') as f:
+                                o = next(islice(f, line - 1, line), None)
+                                if o:
+                                    o = o.rstrip('\n')
+                        except FileNotFoundError:
+                            yield event.chain_result(f"文件不存在: {self.question}")
+                        except Exception as e:
+                            yield event.chain_result(f"读取文件出错: {e}")
+                        # 答案
+                        try:
+                            with open(self.question, 'r', encoding='utf-8') as f:
+                                a = next(islice(f, line - 1, line), None)
+                                if a:
+                                    a = a.rstrip('\n')
+                        except FileNotFoundError:
+                            yield event.chain_result(f"文件不存在: {self.question}")
+                        except Exception as e:
+                            yield event.chain_result(f"读取文件出错: {e}")
+                        a = a.replace('|', '\n')
+                        out = str(out) + f"\n{str(q)}\n{str(o)}\n"
+                        check = str(check) + f"{str(a)}"
+                # ====================注册会话控制器====================
+                # @session_waiter 装饰器：创建一个等待用户回复的会话
+                # timeout=60: 会话超时时间60秒，超时后会抛出 TimeoutError
+                # record_history_chains=False: 不记录消息历史（节省内存）
+                @session_waiter(timeout=self.limited_time, record_history_chains=False)
+                async def quiz_waiter(controller: SessionController, event: AstrMessageEvent):
+                    """
+                    会话控制器的回调函数
+                    在用户回复消息时会被调用
+
+                    参数:
+                        controller: SessionController 对象，用于控制会话行为
+                        event: 用户回复的消息事件
+                    """
+                    try:
+                        # 获取用户输入的文本，并去除首尾空格
+                        answer = event.message_str.strip()
+                        # ====================根据用户答案做出不同响应====================
+                        if answer == "2":
+                            # send() 方法直接发送消息（与 yield 等效）
+                            await event.send(event.plain_result("✅ 回答正确！答题结束，现在可以执行其他指令了。"))
+                            controller.stop()  # 结束会话控制，释放会话
+                        elif answer == "确定":
+                            await event.send(event.plain_result("已退出答题模式。"))
+                            controller.stop()  # 结束会话控制
+                        # 情况3：答案错误
+                        else:
+                            # 发送错误提示，要求重新回答
+                            await event.send(event.plain_result("❌ 答案错误，请重新回答（输入 exit 退出）"))
+                            # keep() 保持会话继续等待
+                            # reset_timeout=True: 重置超时计时器，让用户重新获得60秒答题时间
+                            controller.keep(timeout=60, reset_timeout=True)
+
+                        # ====================启动会话控制器====================
+                        # await 会阻塞在这里，等待用户回复或超时
+                        # 在会话期间，用户的所有消息都会被 quiz_waiter 拦截处理
+                        # 其他指令（如 /help）此时不会生效
+                        await quiz_waiter(event)
+                    # ====================异常处理====================
+                    except TimeoutError:
+                        # 用户规定时间内没有回复，触发超时
+                        yield event.plain_result("答题超时！结束考核")
+                    except Exception as e:
+                        # 其他未预期的异常
+                        yield event.plain_result(f"发生错误: {str(e)}")
+                    finally:
+                        # ====================最终清理====================
+                        # finally 块无论是否发生异常都会执行
+                        # stop_event() 结束当前消息事件的传播
+                        # 防止后续处理器（如其他插件或 LLM）再次处理这条消息
+                        event.stop_event()
+            else:  # 没开启随机抽题
+                pass
+        else:
+            yield event.plain_result("请在私聊或临时会话中使用该指令")
+            return
 
     async def terminate(self):
         '''当插件被卸载或停用时调用，用于释放资源（如关闭数据库连接、停止定时任务等）'''

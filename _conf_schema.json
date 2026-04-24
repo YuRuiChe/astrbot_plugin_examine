@@ -18,7 +18,7 @@
       "reminder_text": {
         "description": "提示文本",
         "type": "text",
-        "default": "注意！进群就相当于开始答题！题目将于1min后发放至你的私聊，请于规定时间内完成答题"
+        "default": "欢迎！请私聊发送“开始答题”以开始测试"
       },
       "reminder_img": {
         "description": "提示图片",
@@ -59,7 +59,7 @@
       "limited_time": {
         "description": "限时",
         "type": "int",
-        "hint": "单位为毫秒（ms），只有在限时内完成答题才会通过",
+        "hint": "单位为秒（s），只有在限时内完成答题才会通过",
         "default": 100
       },
       "randomly_selected_questions": {
