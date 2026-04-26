@@ -142,29 +142,44 @@ class MyPlugin(Star):
                     """
                     会话控制器的回调函数
                     在用户回复消息时会被调用
-
-                    参数:
-                        controller: SessionController 对象，用于控制会话行为
-                        event: 用户回复的消息事件
+                    @session_waiter 回调中应使用 await event.send()，而不是 yield
                     """
+                    controller.if_answer = False
+                    controller.user_answer = ""
+                    controller.mark = 0
+                    await event.send(f"考核开始，请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答 abcabcabcabc\n确定")
+                    await event.send(f"以下为题目，请于{self.limited_time}秒内完成\n\n{str(out)}")
                     try:
                         # 获取用户输入的文本，并去除首尾空格
                         answer = event.message_str.strip()
                         # ====================根据用户答案做出不同响应====================
-                        if answer == "2":
-                            # send() 方法直接发送消息（与 yield 等效）
-                            await event.send(event.plain_result("✅ 回答正确！答题结束，现在可以执行其他指令了。"))
-                            controller.stop()  # 结束会话控制，释放会话
+                        if answer[:2] == "作答":
+                            if len(answer[3:]) == self.total_number_of_questions:
+                                controller.if_answer = True
+                                controller.user_answer = str(answer[3:])
+                                await event.send("是否确定答案？如确定请输入“确定”")
+                            else:
+                                await event.send("你写多或者写少了！请重写")
                         elif answer == "确定":
-                            await event.send(event.plain_result("已退出答题模式。"))
-                            controller.stop()  # 结束会话控制
-                        # 情况3：答案错误
-                        else:
-                            # 发送错误提示，要求重新回答
-                            await event.send(event.plain_result("❌ 答案错误，请重新回答（输入 exit 退出）"))
-                            # keep() 保持会话继续等待
-                            # reset_timeout=True: 重置超时计时器，让用户重新获得60秒答题时间
-                            controller.keep(timeout=60, reset_timeout=True)
+                            if controller.if_answer:
+                                await event.send(event.plain_result("已退出答题模式，正在审核中"))
+                                for i1 in range(self.total_number_of_questions):
+                                    if controller.user_answer[i1] == check[i1]:
+                                        controller.mark =+ self.total_score/self.total_number_of_questions
+                                if controller.mark >= self.passing_line:
+                                    await event.send(event.plain_result(f"恭喜！你以{controller.mark}分的成绩通过了考核！请加入主群：{self.main_group_id}并退出审核群！"))
+                                    group_umo = f"aiocqhttp_default:GroupMessage:{self.examine_group_id}"
+                                    try:
+                                        await self.context.send_message(group_umo, [Plain(f"新人以{controller.mark}的成绩通过了考核！")])
+                                        yield event.plain_result(f"消息已发送至群 {group_umo}。")
+                                    except Exception as e:
+                                        logger.error(f"向群 {group_umo} 发送消息失败: {e}")
+                                        yield event.plain_result("消息发送失败，请检查后台日志。")
+                                else:
+                                    await event.send(event.plain_result(f"你的成绩{controller.mark}低于及格线{self.passing_line}没有通过，请自觉退群"))
+                                controller.stop()
+                            else:
+                                await event.send(event.plain_result("未作答！不能结束！"))
 
                         # ====================启动会话控制器====================
                         # await 会阻塞在这里，等待用户回复或超时
@@ -174,10 +189,10 @@ class MyPlugin(Star):
                     # ====================异常处理====================
                     except TimeoutError:
                         # 用户规定时间内没有回复，触发超时
-                        yield event.plain_result("答题超时！结束考核")
+                        await event.send("答题超时！结束考核！请联系管理员处理")
                     except Exception as e:
                         # 其他未预期的异常
-                        yield event.plain_result(f"发生错误: {str(e)}")
+                        await event.send(f"发生错误: {str(e)}")
                     finally:
                         # ====================最终清理====================
                         # finally 块无论是否发生异常都会执行
