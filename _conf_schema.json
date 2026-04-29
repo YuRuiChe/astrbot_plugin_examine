@@ -44,6 +44,12 @@
         "hint": "题库中有多少题",
         "default": 0
       },
+      "finally_questions": {
+        "description": "目标题数",
+        "type": "int",
+        "hint": "最终输出的题目数量",
+        "default": 0
+      },
       "total_score": {
         "description": "总分",
         "type": "int",
@@ -65,14 +71,8 @@
       "randomly_selected_questions": {
         "description": "随机抽题",
         "type": "bool",
-        "hint": "是否需要进行随机抽题，默认关闭",
+        "hint": "是否需要进行随机抽题。若开启，则从题库中随机抽出题目；若关闭，则按照题目的先后顺序排列。默认关闭",
         "default": false
-      },
-      "finally_questions": {
-        "description": "目标题数",
-        "type": "int",
-        "hint": "如果开启了随机抽题，此数值为最终输出的题目数量",
-        "default": 15
       }
     }
   },
