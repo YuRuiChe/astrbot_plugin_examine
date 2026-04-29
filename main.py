@@ -20,6 +20,7 @@ class MyPlugin(Star):
         self.config = config
         self.main_group_id = config.get("main_group_id", "")
         self.examine_group_id = config.get("examine_group_id", "")
+        self.bot_name = config.get("bot_name", "")
         group_entry_reminder = config.get("group_entry_reminder") or {}
         self.reminder_text = group_entry_reminder.get("reminder_text", "欢迎！请私聊发送“开始答题”以开始测试")
         self.reminder_imgs = group_entry_reminder.get("reminder_img", "")
@@ -88,17 +89,18 @@ class MyPlugin(Star):
     async def start_answer(self, event: AstrMessageEvent):
         """开始答题"""
         # 判断是否为私聊（私聊包括：普通私聊 + 临时会话）
-        user_umo = event.unified_msg_origin
-        user_umo = str(user_umo).replace('aiocqhttp_default:FriendMessage:', '').replace(f'_{self.examine_group_id}', '')
-        try:
-            # 获取群成员信息（如果用户不在群中，API 通常会返回错误或抛出异常）
-            # 注意：不同适配器的 API 方法名可能略有不同
-            member_info = await event.bot.get_group_member_info(
-                group_id=int(self.examine_group_id),
-                user_id=int(user_umo)
-            )
-            if member_info:
-                if event.is_private_chat():
+        if event.is_private_chat():
+            # 获取用户qq
+            user_umo = event.unified_msg_origin
+            user_umo = str(user_umo).replace(f'{self.bot_name}:FriendMessage:', '').replace(f'_{self.examine_group_id}', '')
+            try:
+                # 获取群成员信息（如果用户不在群中，API 通常会返回错误或抛出异常）
+                # 注意：不同适配器的 API 方法名可能略有不同
+                member_info = await event.bot.get_group_member_info(
+                    group_id=int(self.examine_group_id),
+                    user_id=int(user_umo)
+                )
+                if member_info:
                     if self.randomly_selected_questions:  # 如果开启随机抽题
                         out = ""
                         check = ""
@@ -146,99 +148,99 @@ class MyPlugin(Star):
                                 except Exception as e:
                                     yield event.chain_result(f"读取文件出错: {e}")
                                     return
-                                a = a.replace('|', '\n')
+                                a = a.replace('[)', '\n')
                                 out = str(out) + f"\n{str(q)}\n{str(o)}\n"
                                 check = str(check) + f"{str(a)}"
-                        try:
-                            await event.send(f"考核开始，请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答 abcabcabcabc\n确定")
-                            await event.send(f"以下为题目，请于{self.limited_time}秒内完成\n\n{str(out)}")
-                            # ====================注册会话控制器====================
-                            # @session_waiter 装饰器：创建一个等待用户回复的会话
-                            # timeout=60: 会话超时时间60秒，超时后会抛出 TimeoutError
-                            # record_history_chains=False: 不记录消息历史（节省内存）
-                            @session_waiter(timeout=self.limited_time, record_history_chains=False)
-                            async def quiz_waiter(controller: SessionController, event: AstrMessageEvent):
-                                """
-                                会话控制器的回调函数
-                                在用户回复消息时会被调用
-                                @session_waiter 回调中应使用 await event.send()，而不是 yield
-                                """
-                                controller.if_answer = False
-                                controller.user_answer = ""
-                                controller.mark = 0
-                                # 获取用户输入的文本，并去除首尾空格
-                                answer = event.message_str.strip()
-                                # ====================根据用户答案做出不同响应====================
-                                if answer[:2] == "作答":
-                                    if len(answer[3:]) == self.finally_questions:
-                                        controller.if_answer = True
-                                        controller.user_answer = str(answer[3:])
-                                        await event.send("是否确定答案？如确定请输入“确定”")
-                                        return
-                                    else:
-                                        await event.send("你写多或者写少了！请重写")
-                                        return
-                                elif answer == "确定":
-                                    if controller.if_answer:
-                                        group_umo = f"aiocqhttp_default:GroupMessage:{self.examine_group_id}"
-                                        await event.send(event.plain_result("已退出答题模式，正在审核中"))
-                                        for i1 in range(self.finally_questions):
-                                            if controller.user_answer[i1] == check[i1]:
-                                                controller.mark = + self.total_score / self.finally_questions
-                                        if controller.mark >= self.passing_line:
-                                            await event.send(event.plain_result(
-                                                f"恭喜！你以{controller.mark}分的成绩通过了考核！请加入主群：{self.main_group_id}并退出审核群！"))
-                                            try:
-                                                await self.context.send_message(group_umo, [Plain(
-                                                    f"新人{user_umo}以{controller.mark}的成绩通过了考核！")])
-                                            except Exception as e:
-                                                logger.error(f"向群 {group_umo} 发送消息失败: {e}")
-                                                await event.send("消息发送失败，请检查后台日志。")
-                                        else:
-                                            await event.send(event.plain_result(
-                                                f"你的成绩{controller.mark}低于及格线{self.passing_line}没有通过，请自觉退群"))
-                                            try:
-                                                await self.context.send_message(group_umo, [Plain(
-                                                    f"新人{user_umo}的成绩{controller.mark}低于及格线{self.passing_line}未通过考核")])
-                                            except Exception as e:
-                                                logger.error(f"向群 {group_umo} 发送消息失败: {e}")
-                                                await event.send("消息发送失败，请检查后台日志。")
-                                        controller.stop()
-                                        return
-                                    else:
-                                        await event.send(event.plain_result("未作答！不能结束！"))
-                                        return
+                                try:
+                                    await event.send(f"考核开始，请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答 abcabcabcabc\n确定")
+                                    await event.send(f"以下为题目，请于{self.limited_time}秒内完成\n\n{str(out)}")
+                                    # ====================注册会话控制器====================
+                                    # @session_waiter 装饰器：创建一个等待用户回复的会话
+                                    # timeout=60: 会话超时时间60秒，超时后会抛出 TimeoutError
+                                    # record_history_chains=False: 不记录消息历史（节省内存）
+                                    @session_waiter(timeout=self.limited_time, record_history_chains=False)
+                                    async def quiz_waiter(controller: SessionController, event: AstrMessageEvent):
+                                        """
+                                        会话控制器的回调函数
+                                        在用户回复消息时会被调用
+                                        @session_waiter 回调中应使用 await event.send()，而不是 yield
+                                        """
+                                        controller.if_answer = False
+                                        controller.user_answer = ""
+                                        controller.mark = 0
+                                        # 获取用户输入的文本，并去除首尾空格
+                                        answer = event.message_str.strip()
+                                        # ====================根据用户答案做出不同响应====================
+                                        if answer[:2] == "作答":
+                                            if len(answer[3:]) == self.finally_questions:
+                                                controller.if_answer = True
+                                                controller.user_answer = str(answer[3:])
+                                                await event.send("是否确定答案？如确定请输入“确定”")
+                                                return
+                                            else:
+                                                await event.send("你写多或者写少了！请重写")
+                                                return
+                                        elif answer == "确定":
+                                            if controller.if_answer:
+                                                group_umo = f"aiocqhttp_default:GroupMessage:{self.examine_group_id}"
+                                                await event.send(event.plain_result("已退出答题模式，正在审核中"))
+                                                for i1 in range(self.finally_questions):
+                                                    if controller.user_answer[i1] == check[i1]:
+                                                        controller.mark = + self.total_score / self.finally_questions
+                                                if controller.mark >= self.passing_line:
+                                                    await event.send(event.plain_result(
+                                                        f"恭喜！你以{controller.mark}分的成绩通过了考核！请加入主群：{self.main_group_id}并退出审核群！"))
+                                                    try:
+                                                        await self.context.send_message(group_umo, [Plain(
+                                                            f"新人{user_umo}以{controller.mark}的成绩通过了考核！")])
+                                                    except Exception as e:
+                                                        logger.error(f"向群 {group_umo} 发送消息失败: {e}")
+                                                        await event.send("消息发送失败，请检查后台日志。")
+                                                else:
+                                                    await event.send(event.plain_result(
+                                                        f"你的成绩{controller.mark}低于及格线{self.passing_line}没有通过，请自觉退群"))
+                                                    try:
+                                                        await self.context.send_message(group_umo, [Plain(
+                                                            f"新人{user_umo}的成绩{controller.mark}低于及格线{self.passing_line}未通过考核")])
+                                                    except Exception as e:
+                                                        logger.error(f"向群 {group_umo} 发送消息失败: {e}")
+                                                        await event.send("消息发送失败，请检查后台日志。")
+                                                controller.stop()
+                                                return
+                                            else:
+                                                await event.send(event.plain_result("未作答！不能结束！"))
+                                                return
 
-                            # ====================启动会话控制器====================
-                            # await 会阻塞在这里，等待用户回复或超时
-                            # 在会话期间，用户的所有消息都会被 quiz_waiter 拦截处理
-                            # 其他指令（如 /help）此时不会生效
-                            await quiz_waiter(event)
-                            # ====================异常处理====================
-                        except TimeoutError:
-                            # 用户规定时间内没有回复，触发超时
-                            await event.send("答题超时！结束考核！请联系管理员处理")
-                        except Exception as e:
-                            # 其他未预期的异常
-                            await event.send(f"发生错误: {str(e)}")
-                        finally:
-                            # ====================最终清理====================
-                            # finally 块无论是否发生异常都会执行
-                            # stop_event() 结束当前消息事件的传播
-                            # 防止后续处理器（如其他插件或 LLM）再次处理这条消息
-                            event.stop_event()
+                                    # ====================启动会话控制器====================
+                                    # await 会阻塞在这里，等待用户回复或超时
+                                    # 在会话期间，用户的所有消息都会被 quiz_waiter 拦截处理
+                                    # 其他指令（如 /help）此时不会生效
+                                    await quiz_waiter(event)
+                                    # ====================异常处理====================
+                                except TimeoutError:
+                                    # 用户规定时间内没有回复，触发超时
+                                    await event.send("答题超时！结束考核！请联系管理员处理")
+                                except Exception as e:
+                                    # 其他未预期的异常
+                                    await event.send(f"发生错误: {str(e)}")
+                                finally:
+                                    # ====================最终清理====================
+                                    # finally 块无论是否发生异常都会执行
+                                    # stop_event() 结束当前消息事件的传播
+                                    # 防止后续处理器（如其他插件或 LLM）再次处理这条消息
+                                    event.stop_event()
                     else:  # 没开启随机抽题
                         pass
                 else:
-                    yield event.plain_result("请在私聊或临时会话中使用该指令")
+                    yield event.plain_result(f"你不在群 {self.examine_group_id} 中！请尝试先加群！")
                     return
-            else:
-                yield event.plain_result(f"你不在群 {self.examine_group_id} 中！请尝试先加群！")
-                return
-        except Exception as e:
+            except Exception as e:
             # API 报错通常意味着用户不在群中或网络问题
-            logger.error(f"查询成员失败: {e}")
-            yield event.plain_result(f"你不在群 {self.examine_group_id} 中！（或查询失败）请尝试先加群！")
+                logger.error(f"查询成员失败: {e}")
+                yield event.plain_result(f"你不在群 {self.examine_group_id} 中！（或查询失败）请尝试先加群！")
+                return
+        else:
+            yield event.plain_result("请在私聊或临时会话中使用该指令")
             return
 
     async def terminate(self):

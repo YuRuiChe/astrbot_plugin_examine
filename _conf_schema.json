@@ -11,6 +11,12 @@
     "hint": "小群",
     "default": ""
   },
+  "bot_name": {
+    "description": "BOT名称",
+    "type": "string",
+    "hint": "你的bot在astrbot平台上的名称",
+    "default": ""
+  },
   "group_entry_reminder": {
     "description": "入群提示",
     "type": "object",
