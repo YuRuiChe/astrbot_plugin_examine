@@ -121,11 +121,25 @@ class MyPlugin(Star):
                                     q = next(islice(f, line - 1, line), None)
                                     if q:
                                         q = q.rstrip('\n')
-                                 # 选项
+                            except FileNotFoundError:
+                                logger.error(f"文件不存在: {self.question}")
+                                return
+                            except Exception as e:
+                                logger.error(f"读取文件出错: {e}")
+                                return
+                            try:
+                                # 选项
                                 with open(self.option, 'r', encoding='utf-8') as f:
                                     o = next(islice(f, line - 1, line), None)
                                     if o:
                                         o = o.rstrip('\n')
+                            except FileNotFoundError:
+                                logger.error(f"文件不存在: {self.option}")
+                                return
+                            except Exception as e:
+                                logger.error(f"读取文件出错: {e}")
+                                return
+                            try:
                                 # 答案
                                 with open(self.answer, 'r', encoding='utf-8') as f:
                                     a = next(islice(f, line - 1, line), None)
@@ -133,7 +147,7 @@ class MyPlugin(Star):
                                         a = a.rstrip('\n')
                                         a = a.replace('[)', '\n')
                             except FileNotFoundError:
-                                logger.error(f"文件不存在: {self.question}")
+                                logger.error(f"文件不存在: {self.answer}")
                                 return
                             except Exception as e:
                                 logger.error(f"读取文件出错: {e}")
