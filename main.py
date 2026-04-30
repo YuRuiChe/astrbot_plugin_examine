@@ -130,16 +130,16 @@ class MyPlugin(Star):
                                             a = a.rstrip('\n')
                                             a = a.replace('[)', '\n')
                                 except FileNotFoundError:
-                                    yield event.chain_result(f"文件不存在: {self.question}")
+                                    yield event.plain_result(f"文件不存在: {self.question}")
                                     return
                                 except Exception as e:
-                                    yield event.chain_result(f"读取文件出错: {e}")
+                                    yield event.plain_result(f"读取文件出错: {e}")
                                     return
                                 out = str(out) + f"\n{str(q)}\n{str(o)}\n"
                                 check = str(check) + f"{str(a)}"
                         try:
-                            await event.send(f"考核开始，请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答 abcabcabcabc\n确定")
-                            await event.send(f"以下为题目，请于{self.limited_time}秒内完成\n\n{str(out)}")
+                            yield event.plain_result(f"考核开始，请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答 abcabcabcabc\n确定")
+                            yield event.plain_result(f"以下为题目，请于{self.limited_time}秒内完成\n\n{str(out)}")
                             # ====================注册会话控制器====================
                             # @session_waiter 装饰器：创建一个等待用户回复的会话
                             # timeout=60: 会话超时时间60秒，超时后会抛出 TimeoutError
