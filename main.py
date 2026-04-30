@@ -101,40 +101,45 @@ class MyPlugin(Star):
                     user_id=int(user_umo)
                 )
                 if member_info:
+                    out = ""
+                    check = ""
                     if self.randomly_selected_questions:  # 如果开启随机抽题
+                        line_list = set()
                         for i in range(int(self.finally_questions)):
-                            line = random.randint(1, int(self.total_number_of_questions))
-                            line_list = []
-                            line_list.append(int(line))
-                            if line in line_list:
-                                line_list.pop()
-                                continue
-                            else:
-                                try:
-                                    # 问题
-                                    with open(self.question, 'r', encoding='utf-8') as f:
-                                        q = next(islice(f, line - 1, line), None)
-                                        if q:
-                                            q = q.rstrip('\n')
-                                    # 选项
-                                    with open(self.option, 'r', encoding='utf-8') as f:
-                                        o = next(islice(f, line - 1, line), None)
-                                        if o:
-                                            o = o.rstrip('\n')
-                                    # 答案
-                                    with open(self.answer, 'r', encoding='utf-8') as f:
-                                        a = next(islice(f, line - 1, line), None)
-                                        if a:
-                                            a = a.rstrip('\n')
-                                            a = a.replace('[)', '\n')
-                                except FileNotFoundError:
-                                    logger.error(f"文件不存在: {self.question}")
-                                    return
-                                except Exception as e:
-                                    logger.error(f"读取文件出错: {e}")
-                                    return
-                                out = str(out) + f"\n{str(q)}\n{str(o)}\n"
-                                check = str(check) + f"{str(a)}"
+                            while True:
+                                line = random.randint(1, self.total_number_of_questions)
+                                # 检查这个题号是否已经被抽过
+                                if line not in line_list:
+                                    # 没抽过 → 把它加入已抽集合
+                                    line_list.add(line)
+                                    # 退出 while 循环，继续下一道题
+                                    break
+                                # 如果抽过了，不会执行 break，会继续 while 循环重新随机
+                            try:
+                                # 问题
+                                with open(self.question, 'r', encoding='utf-8') as f:
+                                    q = next(islice(f, line - 1, line), None)
+                                    if q:
+                                        q = q.rstrip('\n')
+                                 # 选项
+                                with open(self.option, 'r', encoding='utf-8') as f:
+                                    o = next(islice(f, line - 1, line), None)
+                                    if o:
+                                        o = o.rstrip('\n')
+                                # 答案
+                                with open(self.answer, 'r', encoding='utf-8') as f:
+                                    a = next(islice(f, line - 1, line), None)
+                                    if a:
+                                        a = a.rstrip('\n')
+                                        a = a.replace('[)', '\n')
+                            except FileNotFoundError:
+                                logger.error(f"文件不存在: {self.question}")
+                                return
+                            except Exception as e:
+                                logger.error(f"读取文件出错: {e}")
+                                return
+                            out = str(out) + f"\n{str(q)}\n{str(o)}\n"
+                            check = str(check) + f"{str(a)}"
                         try:
                             yield event.plain_result(f"考核开始，请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答 abcabcabcabc\n确定")
                             yield event.plain_result(f"以下为题目，请于{self.limited_time}秒内完成\n\n{str(out)}")
@@ -171,7 +176,7 @@ class MyPlugin(Star):
                                         await event.send(event.plain_result("已退出答题模式，正在审核中"))
                                         for i1 in range(self.finally_questions):
                                             if controller.user_answer[i1] == check[i1]:
-                                                controller.mark = + self.total_score / self.finally_questions
+                                                controller.mark += self.total_score / self.finally_questions
                                         if controller.mark >= self.passing_line:
                                             await event.send(event.plain_result(f"恭喜！你以{controller.mark}分的成绩通过了考核！请加入主群：{self.main_group_id}并退出审核群！"))
                                             try:
