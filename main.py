@@ -161,39 +161,39 @@ class MyPlugin(Star):
                                     if len(answer[3:]) == self.finally_questions:
                                         controller.if_answer = True
                                         controller.user_answer = str(answer[3:])
-                                        await event.send([Plain("是否确定答案？如确定请输入“确定”")])
+                                        await event.send(event.plain_result("是否确定答案？如确定请输入“确定”"))
                                         return
                                     else:
-                                        await event.send([Plain("你写多或者写少了！请重写")])
+                                        await event.send(event.plain_result("你写多或者写少了！请重写"))
                                         return
 
                                 elif answer == "确定":
                                     if controller.if_answer:
                                         group_umo = f"aiocqhttp_default:GroupMessage:{self.examine_group_id}"
-                                        await event.send([Plain("已退出答题模式，正在审核中")])
+                                        await event.send(event.plain_result("已退出答题模式，正在审核中"))
                                         for i1 in range(self.finally_questions):
                                             if controller.user_answer[i1] == check[i1]:
                                                 controller.mark = + self.total_score / self.finally_questions
                                         if controller.mark >= self.passing_line:
-                                            await event.send([Plain(f"恭喜！你以{controller.mark}分的成绩通过了考核！请加入主群：{self.main_group_id}并退出审核群！")])
+                                            await event.send(event.plain_result(f"恭喜！你以{controller.mark}分的成绩通过了考核！请加入主群：{self.main_group_id}并退出审核群！"))
                                             try:
                                                 await self.context.send_message(group_umo, [Plain(f"新人{user_umo}以{controller.mark}的成绩通过了考核！")])
                                             except Exception as e:
                                                 logger.error(f"向群 {group_umo} 发送消息失败: {e}")
-                                                await event.send([Plain("消息发送失败，请检查后台日志")])
+                                                await event.send(event.plain_result("消息发送失败，请检查后台日志"))
                                             controller.stop()
                                             return
                                         else:
-                                            await event.send([Plain(f"你的成绩{controller.mark}低于及格线{self.passing_line}没有通过，请自觉退群")])
+                                            await event.send(event.plain_result(f"你的成绩{controller.mark}低于及格线{self.passing_line}没有通过，请自觉退群"))
                                             try:
                                                 await self.context.send_message(group_umo, [Plain(f"新人{user_umo}的成绩{controller.mark}低于及格线{self.passing_line}未通过考核")])
                                             except Exception as e:
                                                 logger.error(f"向群 {group_umo} 发送消息失败: {e}")
-                                                await event.send([Plain("消息发送失败，请检查后台日志")])
+                                                await event.send(event.plain_result("消息发送失败，请检查后台日志"))
                                             controller.stop()
                                             return
                                     else:
-                                        await event.send([Plain("未作答！不能结束！")])
+                                        await event.send(event.plain_result("未作答！不能结束！"))
                                         return
                             try:
                                 # ====================启动会话控制器====================
