@@ -115,6 +115,10 @@ class MyPlugin(Star):
                                     # 退出 while 循环，继续下一道题
                                     break
                                 # 如果抽过了，不会执行 break，会继续 while 循环重新随机
+                            # 在读取文件之前，先规范化路径
+                            self.question = os.path.abspath(self.question)
+                            self.option = os.path.abspath(self.option)
+                            self.answer = os.path.abspath(self.answer)
                             try:
                                 # 问题
                                 with open(self.question, 'r', encoding='utf-8') as f:
