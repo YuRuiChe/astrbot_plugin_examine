@@ -92,7 +92,7 @@ class MyPlugin(Star):
         if event.is_private_chat():
             # 获取用户qq
             user_umo = event.unified_msg_origin
-            user_umo = str(user_umo).replace(f'{self.bot_name}:FriendMessage:', '').replace(f'_{self.examine_group_id}', '')
+            user_umo = str(user_umo).replace(f'{self.bot_name}:FriendMessage:', '')
             try:
                 # 获取群成员信息（如果用户不在群中，API 通常会返回错误或抛出异常）
                 # 注意：不同适配器的 API 方法名可能略有不同
