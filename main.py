@@ -102,8 +102,6 @@ class MyPlugin(Star):
                 )
                 if member_info:
                     if self.randomly_selected_questions:  # 如果开启随机抽题
-                        out = ""
-                        check = ""
                         for i in range(int(self.finally_questions)):
                             line = random.randint(1, int(self.total_number_of_questions))
                             line_list = []
@@ -119,21 +117,21 @@ class MyPlugin(Star):
                                         if q:
                                             q = q.rstrip('\n')
                                     # 选项
-                                    with open(self.question, 'r', encoding='utf-8') as f:
+                                    with open(self.option, 'r', encoding='utf-8') as f:
                                         o = next(islice(f, line - 1, line), None)
                                         if o:
                                             o = o.rstrip('\n')
                                     # 答案
-                                    with open(self.question, 'r', encoding='utf-8') as f:
+                                    with open(self.answer, 'r', encoding='utf-8') as f:
                                         a = next(islice(f, line - 1, line), None)
                                         if a:
                                             a = a.rstrip('\n')
                                             a = a.replace('[)', '\n')
                                 except FileNotFoundError:
-                                    yield event.plain_result(f"文件不存在: {self.question}")
+                                    logger.error(f"文件不存在: {self.question}")
                                     return
                                 except Exception as e:
-                                    yield event.plain_result(f"读取文件出错: {e}")
+                                    logger.error(f"读取文件出错: {e}")
                                     return
                                 out = str(out) + f"\n{str(q)}\n{str(o)}\n"
                                 check = str(check) + f"{str(a)}"
