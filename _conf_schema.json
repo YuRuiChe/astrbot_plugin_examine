@@ -59,7 +59,7 @@
       "total_score": {
         "description": "总分",
         "type": "int",
-        "hint": "总分，将均分到每一道题，最好能被总题数整除",
+        "hint": "总分，将均分到每一道题，最好能被目标题数整除",
         "default": 100
       },
       "passing_line": {
