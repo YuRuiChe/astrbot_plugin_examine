@@ -203,16 +203,20 @@ class MyPlugin(Star):
                                         if controller.mark >= self.passing_line:
                                             await event.send(event.plain_result(f"恭喜！你以{controller.mark}分的成绩通过了考核！请加入主群：{self.main_group_id}并退出审核群！"))
                                             try:
-                                                await self.context.send_message(group_umo, [Plain(f"新人{user_umo}以{controller.mark}的成绩通过了考核！")])
+                                                result = event.make_result()
+                                                result.chain = [Plain(f"YES:新人{user_umo}以{controller.mark}分的成绩通过了考核！")]
+                                                await self.context.send_message(group_umo, result)
                                             except Exception as e:
                                                 logger.error(f"向群 {group_umo} 发送消息失败: {e}")
                                                 await event.send(event.plain_result("消息发送失败，请检查后台日志"))
                                             controller.stop()
                                             return
                                         else:
-                                            await event.send(event.plain_result(f"你的成绩{controller.mark}低于及格线{self.passing_line}没有通过，请自觉退群"))
+                                            await event.send(event.plain_result(f"你的成绩{controller.mark}分低于及格线{self.passing_line}分没有通过，请自觉退群"))
                                             try:
-                                                await self.context.send_message(group_umo, [Plain(f"新人{user_umo}的成绩{controller.mark}低于及格线{self.passing_line}未通过考核")])
+                                                result = event.make_result()
+                                                result.chain = [Plain(f"NO:新人{user_umo}的成绩{controller.mark}分低于及格线{self.passing_line}分，未通过！")]
+                                                await self.context.send_message(group_umo, result)
                                             except Exception as e:
                                                 logger.error(f"向群 {group_umo} 发送消息失败: {e}")
                                                 await event.send(event.plain_result("消息发送失败，请检查后台日志"))
