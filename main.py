@@ -250,6 +250,7 @@ class MyPlugin(Star):
                                 # 在会话期间，用户的所有消息都会被 quiz_waiter 拦截处理
                                 # 其他指令（如 /help）此时不会生效
                                 await quiz_waiter(event)
+                                return
                             # ====================异常处理====================
                             except TimeoutError:
                                 # 用户规定时间内没有回复，触发超时
@@ -403,6 +404,7 @@ class MyPlugin(Star):
                             # 在会话期间，用户的所有消息都会被 quiz_waiter 拦截处理
                             # 其他指令（如 /help）此时不会生效
                             await quiz_waiter(event)
+                            return
                         # ====================异常处理====================
                         except TimeoutError:
                             # 用户规定时间内没有回复，触发超时
