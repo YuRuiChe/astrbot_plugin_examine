@@ -85,23 +85,24 @@
   "question_bank": {
     "description": "题库",
     "type": "object",
+    "hint": "请移动文件于data文件夹下，并填写相应的txt文件路径",
     "items": {
       "question": {
         "description": "问题",
-        "hint": "填写提示问题txt文件的完整路径",
         "type": "string",
+        "hint": "示例：data/问题.txt",
         "default": ""
       },
       "option": {
         "description": "选项",
-        "hint": "填写提示选项txt文件的完整路径",
         "type": "string",
+        "hint": "示例：data/选项.txt",
         "default": ""
       },
       "answer": {
         "description": "答案",
-        "hint": "填写提示答案txt文件的完整路径",
         "type": "string",
+        "hint": "示例：data/答案.txt",
         "default": ""
       }
     }
