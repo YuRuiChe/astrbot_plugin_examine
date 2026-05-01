@@ -13,6 +13,9 @@ import aiohttp
 import random
 from pathlib import Path
 
+from psutil import boot_time
+
+
 @register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v1.0-beta", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
@@ -137,6 +140,7 @@ class MyPlugin(Star):
                                     o = next(islice(f, line - 1, line), None)
                                     if o:
                                         o = o.rstrip('\n')
+                                        o = o.replace('[)', '\n')
                             except FileNotFoundError:
                                 logger.error(f"文件不存在: {self.option}")
                                 return
@@ -149,7 +153,6 @@ class MyPlugin(Star):
                                     a = next(islice(f, line - 1, line), None)
                                     if a:
                                         a = a.rstrip('\n')
-                                        a = a.replace('[)', '\n')
                             except FileNotFoundError:
                                 logger.error(f"文件不存在: {self.answer}")
                                 return
@@ -172,9 +175,11 @@ class MyPlugin(Star):
                                 在用户回复消息时会被调用
                                 @session_waiter 回调中应使用 await event.send()，而不是 yield
                                 """
-                                controller.if_answer = False
-                                controller.user_answer = ""
-                                controller.mark = 0
+                                if not hasattr(controller, 'initialized'):
+                                    controller.if_answer = False
+                                    controller.user_answer = ""
+                                    controller.mark = 0
+                                    controller.initialized = True
                                 # 获取用户输入的文本，并去除首尾空格
                                 answer = event.message_str.strip()
                                 # ====================根据用户答案做出不同响应====================
@@ -190,7 +195,7 @@ class MyPlugin(Star):
 
                                 elif answer == "确定":
                                     if controller.if_answer:
-                                        group_umo = f"aiocqhttp_default:GroupMessage:{self.examine_group_id}"
+                                        group_umo = f"{self.bot_name}:GroupMessage:{self.examine_group_id}"
                                         await event.send(event.plain_result("已退出答题模式，正在审核中"))
                                         for i1 in range(self.finally_questions):
                                             if controller.user_answer[i1] == check[i1]:
