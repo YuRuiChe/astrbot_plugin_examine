@@ -24,7 +24,7 @@
       "reminder_text": {
         "description": "提示文本",
         "type": "text",
-        "default": "欢迎！请私聊发送“开始答题”以开始测试"
+        "default": "欢迎！请私聊发送“开始答题”以开始考核"
       },
       "reminder_img": {
         "description": "提示图片",
