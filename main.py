@@ -161,6 +161,10 @@ class MyPlugin(Star):
                                 return
                             out = str(out) + f"\n{str(q)}\n{str(o)}\n"
                             check = str(check) + f"{str(a)}"
+                        user_id = event.get_sender_id()
+                        if user_id in self.active_sessions:
+                            yield event.plain_result("你已有正在进行的答题，请先完成或等待超时!")
+                            return
                         try:
                             yield event.plain_result(f"考核开始，请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答 abcabcabcabc\n确定")
                             yield event.plain_result(f"以下为题目，请于{self.limited_time}秒内完成\n\n{str(out)}")
@@ -210,6 +214,7 @@ class MyPlugin(Star):
                                                 logger.error(f"向群 {group_umo} 发送消息失败: {e}")
                                                 await event.send(event.plain_result("消息发送失败，请检查后台日志"))
                                             controller.stop()
+                                            del self.active_sessions[user_id]
                                             return
                                         else:
                                             await event.send(event.plain_result(f"你的成绩{controller.mark}分低于及格线{self.passing_line}分没有通过，请自觉退群"))
@@ -221,6 +226,7 @@ class MyPlugin(Star):
                                                 logger.error(f"向群 {group_umo} 发送消息失败: {e}")
                                                 await event.send(event.plain_result("消息发送失败，请检查后台日志"))
                                             controller.stop()
+                                            del self.active_sessions[user_id]
                                             return
                                     else:
                                         await event.send(event.plain_result("未作答！不能结束！"))
@@ -287,6 +293,9 @@ class MyPlugin(Star):
                             return
                         out = str(out) + f"\n{str(q)}\n{str(o)}\n"
                         check = str(check) + f"{str(a)}"
+                    if user_id in self.active_sessions:
+                        yield event.plain_result("你已有正在进行的答题，请先完成或等待超时!")
+                        return
                     try:
                         yield event.plain_result(
                             f"考核开始，请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答 abcabcabcabc\n确定")
@@ -339,6 +348,7 @@ class MyPlugin(Star):
                                             logger.error(f"向群 {group_umo} 发送消息失败: {e}")
                                             await event.send(event.plain_result("消息发送失败，请检查后台日志"))
                                         controller.stop()
+                                        del self.active_sessions[user_id]
                                         return
                                     else:
                                         await event.send(event.plain_result(
@@ -352,6 +362,7 @@ class MyPlugin(Star):
                                             logger.error(f"向群 {group_umo} 发送消息失败: {e}")
                                             await event.send(event.plain_result("消息发送失败，请检查后台日志"))
                                         controller.stop()
+                                        del self.active_sessions[user_id]
                                         return
                                 else:
                                     await event.send(event.plain_result("未作答！不能结束！"))
