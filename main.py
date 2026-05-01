@@ -45,6 +45,7 @@ class MyPlugin(Star):
         self.answer = os.path.abspath(self.answer)
         llm = config.get("llm") or {}
         self.disable_llm = llm.get("disable_llm", False)
+        self.active_sessions = {}  # 用于记录活跃会话 {user_id: controller}
 
     @filter.event_message_type(filter.EventMessageType.ALL)  # 监听所有类型的消息事件（包括群消息、私聊、通知等）
     async def handle_group_add(self, event: AstrMessageEvent):
@@ -165,6 +166,7 @@ class MyPlugin(Star):
                         if user_id in self.active_sessions:
                             yield event.plain_result("你已有正在进行的答题，请先完成或等待超时!")
                             return
+                        self.active_sessions[user_id] = True
                         try:
                             yield event.plain_result(f"考核开始，请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答 abcabcabcabc\n确定")
                             yield event.plain_result(f"以下为题目，请于{self.limited_time}秒内完成\n\n{str(out)}")
@@ -241,10 +243,14 @@ class MyPlugin(Star):
                             except TimeoutError:
                                 # 用户规定时间内没有回复，触发超时
                                 yield event.plain_result("答题超时！结束考核！请联系管理员处理")
+                                if user_id in self.active_sessions:
+                                    del self.active_sessions[user_id]
                             except Exception as e:
                                 # 其他未预期的异常
                                 logger.error(f"发生错误: {str(e)}")
                                 yield event.plain_result(f"发生错误: {str(e)}")
+                                if user_id in self.active_sessions:
+                                    del self.active_sessions[user_id]
                             finally:
                                 # ====================最终清理====================
                                 # finally 块无论是否发生异常都会执行
@@ -253,6 +259,8 @@ class MyPlugin(Star):
                                 event.stop_event()
                         except Exception as e:
                             logger.error("会话控制器发生错误: " + str(e))
+                            if user_id in self.active_sessions:
+                                del self.active_sessions[user_id]
                     else:  # 没开启随机抽题
                         try:
                             # 问题
@@ -293,9 +301,11 @@ class MyPlugin(Star):
                             return
                         out = str(out) + f"\n{str(q)}\n{str(o)}\n"
                         check = str(check) + f"{str(a)}"
+                    user_id = event.get_sender_id()
                     if user_id in self.active_sessions:
                         yield event.plain_result("你已有正在进行的答题，请先完成或等待超时!")
                         return
+                    self.active_sessions[user_id] = True
                     try:
                         yield event.plain_result(
                             f"考核开始，请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答 abcabcabcabc\n确定")
@@ -378,10 +388,14 @@ class MyPlugin(Star):
                         except TimeoutError:
                             # 用户规定时间内没有回复，触发超时
                             yield event.plain_result("答题超时！结束考核！请联系管理员处理")
+                            if user_id in self.active_sessions:
+                                del self.active_sessions[user_id]
                         except Exception as e:
                             # 其他未预期的异常
                             logger.error(f"发生错误: {str(e)}")
                             yield event.plain_result(f"发生错误: {str(e)}")
+                            if user_id in self.active_sessions:
+                                del self.active_sessions[user_id]
                         finally:
                             # ====================最终清理====================
                             # finally 块无论是否发生异常都会执行
@@ -390,6 +404,8 @@ class MyPlugin(Star):
                             event.stop_event()
                     except Exception as e:
                         logger.error("会话控制器发生错误: " + str(e))
+                        if user_id in self.active_sessions:
+                            del self.active_sessions[user_id]
                 else:
                     yield event.plain_result(f"你不在群 {self.examine_group_id} 中！请尝试先加群！")
                     return
