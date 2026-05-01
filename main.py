@@ -60,6 +60,8 @@ class MyPlugin(Star):
         # 只处理通知类事件（notice），不处理消息类事件
         if raw_message.get("post_type") != "notice":
             return
+        if event.is_private_chat():
+            return
         # ====================处理群成员入群事件====================
         if raw_message.get("notice_type") == "group_increase":  # 群人数增加 → 新人入群
             user_id = raw_message.get("user_id")  # 获取新成员的QQ号
@@ -101,6 +103,11 @@ class MyPlugin(Star):
             # 获取用户qq
             user_umo = event.unified_msg_origin
             user_umo = str(user_umo).replace(f'{self.bot_name}:FriendMessage:', '')
+            user_id = event.get_sender_id()
+            if user_id in self.active_sessions:
+                yield event.plain_result("你已有正在进行的答题，请先完成或等待超时!")
+                return
+            self.active_sessions[user_id] = True
             try:
                 # 获取群成员信息（如果用户不在群中，API 通常会返回错误或抛出异常）
                 # 注意：不同适配器的 API 方法名可能略有不同
@@ -162,11 +169,6 @@ class MyPlugin(Star):
                                 return
                             out = str(out) + f"\n{str(q)}\n{str(o)}\n"
                             check = str(check) + f"{str(a)}"
-                        user_id = event.get_sender_id()
-                        if user_id in self.active_sessions:
-                            yield event.plain_result("你已有正在进行的答题，请先完成或等待超时!")
-                            return
-                        self.active_sessions[user_id] = True
                         try:
                             yield event.plain_result(f"考核开始，请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答 abcabcabcabc\n确定")
                             yield event.plain_result(f"以下为题目，请于{self.limited_time}秒内完成\n\n{str(out)}")
@@ -311,11 +313,6 @@ class MyPlugin(Star):
                             return
                         out = str(out) + f"\n{str(q)}\n{str(o)}\n"
                         check = str(check) + f"{str(a)}"
-                    user_id = event.get_sender_id()
-                    if user_id in self.active_sessions:
-                        yield event.plain_result("你已有正在进行的答题，请先完成或等待超时!")
-                        return
-                    self.active_sessions[user_id] = True
                     try:
                         yield event.plain_result(
                             f"考核开始，请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答 abcabcabcabc\n确定")
