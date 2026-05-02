@@ -8,7 +8,10 @@
 ## ✨ 简介
 - 能实现**入群考核**的功能
 - （大概）能**替代**你的调查问卷啦
--  可能需要给bot**设为管理员**才能正常使用
+- 可能需要给bot**设为管理员**才能正常使用
+- 理想中的流程图:
+
+<img src="https://raw.githubusercontent.com/YuRuiChe/astrbot_plugin_examine/main/images/流程图.png" width="200" alt="流程图">
 
 ---
 
