@@ -16,7 +16,7 @@ from pathlib import Path
 from psutil import boot_time
 
 
-@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v1.0", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v1.1", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -97,7 +97,7 @@ class MyPlugin(Star):
 
     @filter.command("开始答题")
     async def start_answer(self, event: AstrMessageEvent):
-        """开始答题"""
+        """开始进行答题"""
         # 判断是否为私聊（私聊包括：普通私聊 + 临时会话）
         if event.is_private_chat():
             # 获取用户qq
