@@ -16,7 +16,7 @@ from pathlib import Path
 from psutil import boot_time
 
 
-@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v1.1", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v1.2", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -258,12 +258,14 @@ class MyPlugin(Star):
                                 logger.info(f"用户{user_umo}答题超时！结束考核！请联系管理员处理")
                                 if user_id in self.active_sessions:
                                     del self.active_sessions[user_id]
+                                return
                             except Exception as e:
                                 # 其他未预期的异常
                                 logger.error(f"发生错误: {str(e)}")
                                 yield event.plain_result(f"发生错误: {str(e)}")
                                 if user_id in self.active_sessions:
                                     del self.active_sessions[user_id]
+                                return
                             finally:
                                 # ====================最终清理====================
                                 # finally 块无论是否发生异常都会执行
@@ -274,6 +276,7 @@ class MyPlugin(Star):
                             logger.error("会话控制器发生错误: " + str(e))
                             if user_id in self.active_sessions:
                                 del self.active_sessions[user_id]
+                            return
                     else:  # 没开启随机抽题
                         try:
                             # 问题
@@ -412,12 +415,14 @@ class MyPlugin(Star):
                             logger.info(f"用户{user_umo}答题超时！结束考核！请联系管理员处理")
                             if user_id in self.active_sessions:
                                 del self.active_sessions[user_id]
+                            return
                         except Exception as e:
                             # 其他未预期的异常
                             logger.error(f"发生错误: {str(e)}")
                             yield event.plain_result(f"发生错误: {str(e)}")
                             if user_id in self.active_sessions:
                                 del self.active_sessions[user_id]
+                            return
                         finally:
                             # ====================最终清理====================
                             # finally 块无论是否发生异常都会执行
@@ -428,6 +433,7 @@ class MyPlugin(Star):
                         logger.error("会话控制器发生错误: " + str(e))
                         if user_id in self.active_sessions:
                             del self.active_sessions[user_id]
+                        return
                 else:
                     yield event.plain_result(f"你不在群 {self.examine_group_id} 中！请尝试先加群！")
                     return
