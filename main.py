@@ -16,7 +16,7 @@ from pathlib import Path
 from psutil import boot_time
 
 
-@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v1.2", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v1.3", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -104,6 +104,7 @@ class MyPlugin(Star):
             user_umo = event.unified_msg_origin
             user_umo = str(user_umo).replace(f'{self.bot_name}:FriendMessage:', '')
             user_id = event.get_sender_id()
+            group_umo = f"{self.bot_name}:GroupMessage:{self.examine_group_id}"
             if user_id in self.active_sessions:
                 yield event.plain_result("你已有正在进行的答题，请先完成或等待超时!")
                 return
@@ -169,6 +170,7 @@ class MyPlugin(Star):
                                 return
                             out = str(out) + f"\n{str(q)}\n{str(o)}\n"
                             check = str(check) + f"{str(a)}"
+
                         try:
                             yield event.plain_result(f"考核开始，请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答 abcabcabcabc\n确定")
                             yield event.plain_result(f"以下为题目，请于{self.limited_time}秒内完成\n\n{str(out)}")
@@ -207,7 +209,6 @@ class MyPlugin(Star):
 
                                 elif answer == "确定":
                                     if controller.if_answer:
-                                        group_umo = f"{self.bot_name}:GroupMessage:{self.examine_group_id}"
                                         await event.send(event.plain_result("已退出答题模式，正在审核中"))
                                         logger.info("已退出答题模式，正在审核中")
                                         for i1 in range(self.finally_questions):
@@ -256,6 +257,14 @@ class MyPlugin(Star):
                                 # 用户规定时间内没有回复，触发超时
                                 yield event.plain_result("答题超时！结束考核！请联系管理员处理")
                                 logger.info(f"用户{user_umo}答题超时！结束考核！请联系管理员处理")
+                                try:
+                                    result = event.make_result()
+                                    result.chain = [Plain(f"未通过:新人{user_umo}作答超时！")]
+                                    await self.context.send_message(group_umo, result)
+                                    logger.info(f"已向群{group_umo}发送{user_umo}的卡片")
+                                except Exception as e:
+                                    await event.send(event.plain_result("消息发送失败，请检查后台日志"))
+                                    logger.error(f"向群 {group_umo} 发送消息失败: {e}")
                                 if user_id in self.active_sessions:
                                     del self.active_sessions[user_id]
                                 return
@@ -277,6 +286,7 @@ class MyPlugin(Star):
                             if user_id in self.active_sessions:
                                 del self.active_sessions[user_id]
                             return
+
                     else:  # 没开启随机抽题
                         try:
                             # 问题
@@ -357,7 +367,6 @@ class MyPlugin(Star):
 
                             elif answer == "确定":
                                 if controller.if_answer:
-                                    group_umo = f"{self.bot_name}:GroupMessage:{self.examine_group_id}"
                                     await event.send(event.plain_result("已退出答题模式，正在审核中"))
                                     logger.info("已退出答题模式，正在审核中")
                                     for i1 in range(self.finally_questions):
@@ -413,6 +422,14 @@ class MyPlugin(Star):
                             # 用户规定时间内没有回复，触发超时
                             yield event.plain_result("答题超时！结束考核！请联系管理员处理")
                             logger.info(f"用户{user_umo}答题超时！结束考核！请联系管理员处理")
+                            try:
+                                result = event.make_result()
+                                result.chain = [Plain(f"未通过:新人{user_umo}作答超时！")]
+                                await self.context.send_message(group_umo, result)
+                                logger.info(f"已向群{group_umo}发送{user_umo}的卡片")
+                            except Exception as e:
+                                await event.send(event.plain_result("消息发送失败，请检查后台日志"))
+                                logger.error(f"向群 {group_umo} 发送消息失败: {e}")
                             if user_id in self.active_sessions:
                                 del self.active_sessions[user_id]
                             return
