@@ -16,7 +16,7 @@ from pathlib import Path
 from psutil import boot_time
 
 
-@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v1.3", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v1.4", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -172,7 +172,15 @@ class MyPlugin(Star):
                             check = str(check) + f"{str(a)}"
 
                         try:
-                            yield event.plain_result(f"考核开始，请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答 abcabcabcabc\n确定")
+                            try:
+                                result = event.make_result()
+                                result.chain = [Plain(f"新人{user_umo}开始答题！")]
+                                await self.context.send_message(group_umo, result)
+                                logger.info(f"用户{user_umo}开始答题！")
+                            except Exception as e:
+                                await event.send(event.plain_result("消息发送失败，请检查后台日志"))
+                                logger.error(f"向群 {group_umo} 发送消息失败: {e}")
+                            yield event.plain_result(f"考核开始，请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答abcabcabcabc")
                             yield event.plain_result(f"以下为题目，请于{self.limited_time}秒内完成\n\n{str(out)}")
                             logger.info("已发送题目！")
                             # ====================注册会话控制器====================
@@ -196,9 +204,9 @@ class MyPlugin(Star):
                                 answer = event.message_str.strip()
                                 # ====================根据用户答案做出不同响应====================
                                 if answer[:2] == "作答":
-                                    if len(answer[3:]) == self.finally_questions:
+                                    if len(answer[2:]) == self.finally_questions:
                                         controller.if_answer = True
-                                        controller.user_answer = str(answer[3:])
+                                        controller.user_answer = str(answer[2:])
                                         await event.send(event.plain_result("是否确定答案？如确定请输入“确定”"))
                                         logger.info(f"用户答案为{controller.user_answer}")
                                         return
@@ -328,8 +336,16 @@ class MyPlugin(Star):
                         out = str(out) + f"\n{str(q)}\n{str(o)}\n"
                         check = str(check) + f"{str(a)}"
                     try:
+                        try:
+                            result = event.make_result()
+                            result.chain = [Plain(f"新人{user_umo}开始答题！")]
+                            await self.context.send_message(group_umo, result)
+                            logger.info(f"用户{user_umo}开始答题！")
+                        except Exception as e:
+                            await event.send(event.plain_result("消息发送失败，请检查后台日志"))
+                            logger.error(f"向群 {group_umo} 发送消息失败: {e}")
                         yield event.plain_result(
-                            f"考核开始，请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答 abcabcabcabc\n确定")
+                            f"考核开始，请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答abcabcabcabc")
                         yield event.plain_result(f"以下为题目，请于{self.limited_time}秒内完成\n\n{str(out)}")
                         logger.info("已发送题目！")
 
@@ -354,9 +370,9 @@ class MyPlugin(Star):
                             answer = event.message_str.strip()
                             # ====================根据用户答案做出不同响应====================
                             if answer[:2] == "作答":
-                                if len(answer[3:]) == self.finally_questions:
+                                if len(answer[2:]) == self.finally_questions:
                                     controller.if_answer = True
-                                    controller.user_answer = str(answer[3:])
+                                    controller.user_answer = str(answer[2:])
                                     await event.send(event.plain_result("是否确定答案？如确定请输入“确定”"))
                                     logger.info(f"用户答案为{controller.user_answer}")
                                     return
