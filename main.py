@@ -144,7 +144,7 @@ class MyPlugin(Star):
                         controller.mark += self.total_score / self.finally_questions
                         controller.user_answer_str = f"{controller.user_answer_str}|✅{i1+1}{controller.user_answer[i1]}"
                     else:
-                        controller.user_answer_str = f"{controller.user_answer_str}|✅{i1+1}{controller.user_answer[i1]}"
+                        controller.user_answer_str = f"{controller.user_answer_str}|❌{i1+1}{controller.user_answer[i1]}"
                 if controller.mark >= self.passing_line:
                     await event.send(event.plain_result(
                         f"恭喜！你以{controller.mark}分的成绩通过了考核！请加入主群：{self.main_group_id}并退出审核群！"))
