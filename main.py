@@ -102,6 +102,17 @@ class MyPlugin(Star):
         在用户回复消息时会被调用
         @session_waiter 回调中应使用 await event.send()，而不是 yield
         """
+        # ===== 去重锁：防止同一事件被处理两次 =====
+        if not hasattr(controller, '_last_processed_msg_id'):
+            controller._last_processed_msg_id = None
+        current_msg_id = event.message_obj.message_id if hasattr(event, 'message_obj') else None
+        if current_msg_id and current_msg_id == controller._last_processed_msg_id:
+            logger.info(f"跳过重复消息: {current_msg_id}")
+            return
+
+        if current_msg_id:
+            controller._last_processed_msg_id = current_msg_id
+        # ===== 去重结束 =====
         logger.info("会话控制器正在运行")
         if not hasattr(controller, 'initialized'):
             controller.if_answer = False
