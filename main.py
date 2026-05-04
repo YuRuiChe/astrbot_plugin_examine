@@ -16,7 +16,7 @@ from pathlib import Path
 from psutil import boot_time
 
 
-@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v2.3", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v2.1", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -45,6 +45,8 @@ class MyPlugin(Star):
         self.answer = os.path.abspath(self.answer)
         llm = config.get("llm") or {}
         self.disable_llm = llm.get("disable_llm", False)
+        card = config.get("card") or {}
+        self.send_user_answer = card.get("send_user_answer", True)
         self.active_sessions = {}  # 用于记录活跃会话 {user_id: controller}
 
     @filter.event_message_type(filter.EventMessageType.ALL)  # 监听所有类型的消息事件（包括群消息、私聊、通知等）
@@ -150,14 +152,15 @@ class MyPlugin(Star):
                         f"恭喜！你以{controller.mark}分的成绩通过了考核！请加入主群：{self.main_group_id}并退出审核群！"))
                     logger.info(
                         f"恭喜！用户{user_umo}以{controller.mark}分的成绩通过了考核！请加入主群：{self.main_group_id}并退出审核群！")
-                    try:
-                        result = event.make_result()
-                        result.chain = [Plain(f"✅通过:新人{user_umo}以{controller.mark}分的成绩通过了考核！\n答案：\n{controller.user_answer_str}")]
-                        logger.info(f"已向群{group_umo}发送{user_umo}的卡片")
-                        await self.context.send_message(group_umo, result)
-                    except Exception as e:
-                        await event.send(event.plain_result("消息发送失败，请检查后台日志"))
-                        logger.error(f"向群 {group_umo} 发送消息失败: {e}")
+                    if self.send_user_answer:
+                        try:
+                            result = event.make_result()
+                            result.chain = [Plain(f"✅通过:新人{user_umo}以{controller.mark}分的成绩通过了考核！\n答案：\n{controller.user_answer_str}")]
+                            logger.info(f"已向群{group_umo}发送{user_umo}的卡片")
+                            await self.context.send_message(group_umo, result)
+                        except Exception as e:
+                            await event.send(event.plain_result("消息发送失败，请检查后台日志"))
+                            logger.error(f"向群 {group_umo} 发送消息失败: {e}")
                     controller.stop()
                     del self.active_sessions[user_id]
                     return
@@ -166,15 +169,16 @@ class MyPlugin(Star):
                         f"你的成绩{controller.mark}分低于及格线{self.passing_line}分没有通过，请自觉退群"))
                     logger.error(
                         f"用户{user_umo}的成绩{controller.mark}分低于及格线{self.passing_line}分没有通过，请自觉退群")
-                    try:
-                        result = event.make_result()
-                        result.chain = [Plain(
-                            f"❌未通过:新人{user_umo}的成绩{controller.mark}分低于及格线{self.passing_line}分，未通过！\n答案：\n{controller.user_answer_str}")]
-                        await self.context.send_message(group_umo, result)
-                        logger.info(f"已向群{group_umo}发送{user_umo}的卡片")
-                    except Exception as e:
-                        await event.send(event.plain_result("消息发送失败，请检查后台日志"))
-                        logger.error(f"向群 {group_umo} 发送消息失败: {e}")
+                    if self.send_user_answer:
+                        try:
+                            result = event.make_result()
+                            result.chain = [Plain(
+                                f"❌未通过:新人{user_umo}的成绩{controller.mark}分低于及格线{self.passing_line}分，未通过！\n答案：\n{controller.user_answer_str}")]
+                            await self.context.send_message(group_umo, result)
+                            logger.info(f"已向群{group_umo}发送{user_umo}的卡片")
+                        except Exception as e:
+                            await event.send(event.plain_result("消息发送失败，请检查后台日志"))
+                            logger.error(f"向群 {group_umo} 发送消息失败: {e}")
                     controller.stop()
                     del self.active_sessions[user_id]
                     return

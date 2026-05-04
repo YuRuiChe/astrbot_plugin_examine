@@ -33,9 +33,9 @@
         "default": ""
       },
       "whether_at": {
-        "description": "是否需要at发送入群欢迎消息",
+        "description": "入群at",
         "type": "bool",
-        "hint": "是否需要at，默认关闭",
+        "hint": "是否需要at发送入群欢迎消息，默认关闭",
         "default": false
       }
     }
@@ -79,6 +79,19 @@
         "type": "bool",
         "hint": "是否需要进行随机抽题。若开启，则从题库中随机抽出题目；若关闭，则按照题目的先后顺序排列。默认关闭",
         "default": false
+      }
+    }
+  },
+  "card": {
+    "description": "卡片",
+    "type": "object",
+    "hint": "完成答题后向群内发送的新人卡片",
+    "items": {
+      "send_user_answer": {
+        "description": "发送作答答案",
+        "type": "bool",
+        "hint": "是否发送新人作答的答案，默认开启",
+        "default": true
       }
     }
   },
