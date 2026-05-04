@@ -152,7 +152,7 @@ class MyPlugin(Star):
                         f"恭喜！用户{user_umo}以{controller.mark}分的成绩通过了考核！请加入主群：{self.main_group_id}并退出审核群！")
                     try:
                         result = event.make_result()
-                        result.chain = [Plain(f"✅通过:新人{user_umo}以{controller.mark}分的成绩通过了考核！")]
+                        result.chain = [Plain(f"✅通过:新人{user_umo}以{controller.mark}分的成绩通过了考核！答案：\n{controller.user_answer_str}")]
                         logger.info(f"已向群{group_umo}发送{user_umo}的卡片")
                         await self.context.send_message(group_umo, result)
                     except Exception as e:
@@ -169,7 +169,7 @@ class MyPlugin(Star):
                     try:
                         result = event.make_result()
                         result.chain = [Plain(
-                            f"❌未通过:新人{user_umo}的成绩{controller.mark}分低于及格线{self.passing_line}分，未通过！")]
+                            f"❌未通过:新人{user_umo}的成绩{controller.mark}分低于及格线{self.passing_line}分，未通过！答案：\n{controller.user_answer_str}")]
                         await self.context.send_message(group_umo, result)
                         logger.info(f"已向群{group_umo}发送{user_umo}的卡片")
                     except Exception as e:
