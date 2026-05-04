@@ -16,7 +16,7 @@ from pathlib import Path
 from psutil import boot_time
 
 
-@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v2.0-beta", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v2.0", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -119,6 +119,7 @@ class MyPlugin(Star):
             controller.user_answer = ""
             controller.mark = 0
             controller.initialized = True
+            controller.user_answer_str = ""
         # 获取用户输入的文本，并去除首尾空格
         answer = event.message_str.strip()
         # ====================根据用户答案做出不同响应====================
@@ -141,6 +142,9 @@ class MyPlugin(Star):
                 for i1 in range(self.finally_questions):
                     if controller.user_answer[i1] == check[i1]:
                         controller.mark += self.total_score / self.finally_questions
+                        controller.user_answer_str = f"{i1+1}{controller.user_answer_str}✅{controller.user_answer[i1]}"
+                    else:
+                        controller.user_answer_str = f"{i1+1}{controller.user_answer_str}❌{controller.user_answer[i1]}"
                 if controller.mark >= self.passing_line:
                     await event.send(event.plain_result(
                         f"恭喜！你以{controller.mark}分的成绩通过了考核！请加入主群：{self.main_group_id}并退出审核群！"))
@@ -148,7 +152,7 @@ class MyPlugin(Star):
                         f"恭喜！用户{user_umo}以{controller.mark}分的成绩通过了考核！请加入主群：{self.main_group_id}并退出审核群！")
                     try:
                         result = event.make_result()
-                        result.chain = [Plain(f"通过:新人{user_umo}以{controller.mark}分的成绩通过了考核！")]
+                        result.chain = [Plain(f"✅通过:新人{user_umo}以{controller.mark}分的成绩通过了考核！")]
                         logger.info(f"已向群{group_umo}发送{user_umo}的卡片")
                         await self.context.send_message(group_umo, result)
                     except Exception as e:
@@ -165,7 +169,7 @@ class MyPlugin(Star):
                     try:
                         result = event.make_result()
                         result.chain = [Plain(
-                            f"未通过:新人{user_umo}的成绩{controller.mark}分低于及格线{self.passing_line}分，未通过！")]
+                            f"❌未通过:新人{user_umo}的成绩{controller.mark}分低于及格线{self.passing_line}分，未通过！")]
                         await self.context.send_message(group_umo, result)
                         logger.info(f"已向群{group_umo}发送{user_umo}的卡片")
                     except Exception as e:
