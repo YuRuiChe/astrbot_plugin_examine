@@ -16,7 +16,7 @@ from pathlib import Path
 from psutil import boot_time
 
 
-@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v1.4", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v1.5", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -188,7 +188,7 @@ class MyPlugin(Star):
                             # timeout=60: 会话超时时间60秒，超时后会抛出 TimeoutError
                             # record_history_chains=False: 不记录消息历史（节省内存）
                             @session_waiter(timeout=self.limited_time, record_history_chains=False)
-                            async def quiz_waiter(controller: SessionController, event: AstrMessageEvent):
+                            async def random_open_quiz_waiter(controller: SessionController, event: AstrMessageEvent):
                                 """
                                 会话控制器的回调函数
                                 在用户回复消息时会被调用
@@ -256,9 +256,9 @@ class MyPlugin(Star):
                             try:
                                 # ====================启动会话控制器====================
                                 # await 会阻塞在这里，等待用户回复或超时
-                                # 在会话期间，用户的所有消息都会被 quiz_waiter 拦截处理
+                                # 在会话期间，用户的所有消息都会被 random_open_quiz_waiter 拦截处理
                                 # 其他指令（如 /help）此时不会生效
-                                await quiz_waiter(event)
+                                await random_open_quiz_waiter(event)
                                 return
                             # ====================异常处理====================
                             except TimeoutError:
@@ -354,7 +354,7 @@ class MyPlugin(Star):
                         # timeout=60: 会话超时时间60秒，超时后会抛出 TimeoutError
                         # record_history_chains=False: 不记录消息历史（节省内存）
                         @session_waiter(timeout=self.limited_time, record_history_chains=False)
-                        async def quiz_waiter(controller: SessionController, event: AstrMessageEvent):
+                        async def random_off_quiz_waiter(controller: SessionController, event: AstrMessageEvent):
                             """
                             会话控制器的回调函数
                             在用户回复消息时会被调用
@@ -429,9 +429,9 @@ class MyPlugin(Star):
                         try:
                             # ====================启动会话控制器====================
                             # await 会阻塞在这里，等待用户回复或超时
-                            # 在会话期间，用户的所有消息都会被 quiz_waiter 拦截处理
+                            # 在会话期间，用户的所有消息都会被 random_off_quiz_waiter 拦截处理
                             # 其他指令（如 /help）此时不会生效
-                            await quiz_waiter(event)
+                            await random_off_quiz_waiter(event)
                             return
                         # ====================异常处理====================
                         except TimeoutError:
