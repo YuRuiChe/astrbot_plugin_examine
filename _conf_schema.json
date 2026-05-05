@@ -24,7 +24,7 @@
       "reminder_text": {
         "description": "提示文本",
         "type": "text",
-        "default": "欢迎！请私聊发送“开始答题”以开始考核"
+        "default": "欢迎！请向此bot私聊发送“开始答题”以开始考核"
       },
       "reminder_img": {
         "description": "提示图片",
@@ -51,7 +51,7 @@
         "default": 0
       },
       "finally_questions": {
-        "description": "目标题数",
+        "description": "输出题数",
         "type": "int",
         "hint": "最终输出的题目数量",
         "default": 0
@@ -59,7 +59,7 @@
       "total_score": {
         "description": "总分",
         "type": "int",
-        "hint": "总分，将均分到每一道题，最好能被目标题数整除",
+        "hint": "总分，将均分到每一道题，最好能被输出题数整除",
         "default": 100
       },
       "passing_line": {
@@ -73,6 +73,18 @@
         "type": "int",
         "hint": "单位为秒（s），只有在限时内完成答题才会通过",
         "default": 100
+      },
+      "pre_exam_instructions": {
+        "description": "考前须知",
+        "type": "text",
+        "hint": "开始考核前的须知",
+        "default": "考前须知：\n请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答abcabcabcabc（前面一定要有“作答”二字！）\n总共有{self.finally_questions}道题，写多写少会提示\n请于{self.limited_time}秒内完成答题\n\n题目将于{self.read_time}秒后发送"
+      },
+      "read_time": {
+        "description": "阅读时间",
+        "type": "int",
+        "hint": "给予新人阅读考前须知的时间，单位为秒（s）",
+        "default": 60
       },
       "randomly_selected_questions": {
         "description": "随机抽题",
