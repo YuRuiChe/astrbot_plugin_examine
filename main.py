@@ -273,7 +273,7 @@ class MyPlugin(Star):
                             except Exception as e:
                                 await event.send(event.plain_result("消息发送失败，请检查后台日志"))
                                 logger.error(f"向群 {group_umo} 发送消息失败: {e}")
-                            yield event.plain_result(f"{self.pre_exam_instructions}")
+                            yield event.plain_result(f"{str(self.pre_exam_instructions)}")
                             logger.info("已发送考前须知！")
                             time.sleep(self.read_time)
                             yield event.plain_result(f"考核开始，以下为题目，请于{self.limited_time}秒内完成，现在开始计时\n\n{str(out)}")
@@ -376,7 +376,7 @@ class MyPlugin(Star):
                         except Exception as e:
                             await event.send(event.plain_result("消息发送失败，请检查后台日志"))
                             logger.error(f"向群 {group_umo} 发送消息失败: {e}")
-                        yield event.plain_result(f"{self.pre_exam_instructions}")
+                        yield event.plain_result(f"{str(self.pre_exam_instructions)}")
                         logger.info("已发送考前须知！")
                         time.sleep(self.read_time)
                         yield event.plain_result(f"考核开始，以下为题目，请于{self.limited_time}秒内完成，现在开始计时\n\n{str(out)}")
