@@ -16,7 +16,7 @@ from pathlib import Path
 from psutil import boot_time
 
 
-@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v2.2", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v2.3", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -34,7 +34,7 @@ class MyPlugin(Star):
         self.total_score = answer.get("total_score", 100)
         self.passing_line = answer.get("passing_line", 60)
         self.limited_time = answer.get("limited_time", 100)
-        self.pre_exam_instructions = answer.get("pre_exam_instructions", "考前须知：\n请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答abcabcabcabc（前面一定要有“作答”二字！）\n总共有{self.finally_questions}道题，写多写少会提示\n请于{self.limited_time}秒内完成答题\n\n题目将于{self.read_time}秒后发送")
+        self.pre_exam_instructions = answer.get("pre_exam_instructions", "考前须知：\n\n请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答abcabcabcabc（前面一定要有“作答”二字！）\n\n总共有{self.finally_questions}道题，写多写少会提示\n请于{self.limited_time}秒内完成答题\n\n题目将于{self.read_time}秒后发送")
         self.read_time = answer.get("read_time", 60)
         self.randomly_selected_questions = answer.get("randomly_selected_questions", False)
         question_bank = config.get("question_bank") or {}
@@ -273,8 +273,8 @@ class MyPlugin(Star):
                             except Exception as e:
                                 await event.send(event.plain_result("消息发送失败，请检查后台日志"))
                                 logger.error(f"向群 {group_umo} 发送消息失败: {e}")
-                            yield event.plain_result(self.pre_exam_instructions)
-                            logger.info("考前须知！")
+                            yield event.plain_result(f"{self.pre_exam_instructions}")
+                            logger.info("已发送考前须知！")
                             time.sleep(self.read_time)
                             yield event.plain_result(f"考核开始，以下为题目，请于{self.limited_time}秒内完成，现在开始计时\n\n{str(out)}")
                             logger.info("已发送题目！")
@@ -376,8 +376,8 @@ class MyPlugin(Star):
                         except Exception as e:
                             await event.send(event.plain_result("消息发送失败，请检查后台日志"))
                             logger.error(f"向群 {group_umo} 发送消息失败: {e}")
-                        yield event.plain_result(self.pre_exam_instructions)
-                        logger.info("考前须知！")
+                        yield event.plain_result(f"{self.pre_exam_instructions}")
+                        logger.info("已发送考前须知！")
                         time.sleep(self.read_time)
                         yield event.plain_result(f"考核开始，以下为题目，请于{self.limited_time}秒内完成，现在开始计时\n\n{str(out)}")
                         logger.info("已发送题目！")
