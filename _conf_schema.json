@@ -78,7 +78,7 @@
         "description": "考前须知",
         "type": "text",
         "hint": "开始考核前的须知",
-        "default": "考前须知：\n\n请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答abcabcabcabc（前面一定要有“作答”二字！）\n\n总共有{self.finally_questions}道题，写多写少会提示\n请于{self.limited_time}秒内完成答题\n\n题目将于{self.read_time}秒后发送"
+        "default": "f'考前须知：\n\n请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答abcabcabcabc（前面一定要有“作答”二字！）\n\n总共有{self.finally_questions}道题，写多写少会提示\n请于{self.limited_time}秒内完成答题\n\n题目将于{self.read_time}秒后发送'"
       },
       "read_time": {
         "description": "阅读时间",
