@@ -213,9 +213,9 @@ class MyPlugin(Star):
                     out = ""
                     check = ""
                     pre_exam_instructions = self.pre_exam_instructions.format(
-                        finally_questions = self.finally_questions,
-                        limited_time = self.limited_time,
-                        read_time = self.read_time
+                        finally_questions=self.finally_questions,
+                        limited_time=self.limited_time,
+                        read_time=self.read_time
                     )
                     if self.randomly_selected_questions:  # 如果开启随机抽题
                         line_list = set()
