@@ -1,13 +1,9 @@
 # 📝 更新日志
 
-- ## v2.3
-  - 修改了“pre_exam_instructions”的默认值
-  - 修复了考前须知部分无法正确读取配置文件的bug
-
 - ## v2.2
   - 添加了考前须知
   - 优化了引导
-  - 新增了“pre_exam_instructions”“read_time”配置
+  - 新增了“read_time”配置
 
 - ## v2.1
   - 修改了配置文件

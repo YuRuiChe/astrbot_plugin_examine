@@ -16,7 +16,7 @@ from pathlib import Path
 from psutil import boot_time
 
 
-@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v2.3", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v2.2", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -34,8 +34,6 @@ class MyPlugin(Star):
         self.total_score = answer.get("total_score", 100)
         self.passing_line = answer.get("passing_line", 60)
         self.limited_time = answer.get("limited_time", 100)
-        self.pre_exam_instructions = answer.get("pre_exam_instructions", "考前须知：\n\n请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答abcabcabcabc（前面一定要有“作答”二字！）\n\n总共有{self.finally_questions}道题，写多写少会提示\n请于{self.limited_time}秒内完成答题\n\n题目将于{self.read_time}秒后发送")
-        self.read_time = answer.get("read_time", 60)
         self.randomly_selected_questions = answer.get("randomly_selected_questions", False)
         question_bank = config.get("question_bank") or {}
         self.question = question_bank.get("question", "")
@@ -136,7 +134,7 @@ class MyPlugin(Star):
                 return
             else:
                 await event.send(event.plain_result("你写多或者写少了！请重写"))
-                logger.info(f"用户{user_id}写多或者写少了！请重写")
+                logger.info(f"用户{user_umo}写多或者写少了！请重写")
                 return
 
         elif answer == "确定":
@@ -153,12 +151,12 @@ class MyPlugin(Star):
                     await event.send(event.plain_result(
                         f"恭喜！你以{controller.mark}分的成绩通过了考核！请加入主群：{self.main_group_id}并退出审核群！"))
                     logger.info(
-                        f"恭喜！用户{user_id}以{controller.mark}分的成绩通过了考核！请加入主群：{self.main_group_id}并退出审核群！")
+                        f"恭喜！用户{user_umo}以{controller.mark}分的成绩通过了考核！请加入主群：{self.main_group_id}并退出审核群！")
                     if self.send_user_answer:
                         try:
                             result = event.make_result()
-                            result.chain = [Plain(f"✅通过:新人{user_id}以{controller.mark}分的成绩通过了考核！\n答案：\n{controller.user_answer_str}")]
-                            logger.info(f"已向群{group_umo}发送{user_id}的卡片")
+                            result.chain = [Plain(f"✅通过:新人{user_umo}以{controller.mark}分的成绩通过了考核！\n答案：\n{controller.user_answer_str}")]
+                            logger.info(f"已向群{group_umo}发送{user_umo}的卡片")
                             await self.context.send_message(group_umo, result)
                         except Exception as e:
                             await event.send(event.plain_result("消息发送失败，请检查后台日志"))
@@ -170,14 +168,14 @@ class MyPlugin(Star):
                     await event.send(event.plain_result(
                         f"你的成绩{controller.mark}分低于及格线{self.passing_line}分没有通过，请自觉退群"))
                     logger.error(
-                        f"用户{user_id}的成绩{controller.mark}分低于及格线{self.passing_line}分没有通过，请自觉退群")
+                        f"用户{user_umo}的成绩{controller.mark}分低于及格线{self.passing_line}分没有通过，请自觉退群")
                     if self.send_user_answer:
                         try:
                             result = event.make_result()
                             result.chain = [Plain(
-                                f"❌未通过:新人{user_id}的成绩{controller.mark}分低于及格线{self.passing_line}分，未通过！\n答案：\n{controller.user_answer_str}")]
+                                f"❌未通过:新人{user_umo}的成绩{controller.mark}分低于及格线{self.passing_line}分，未通过！\n答案：\n{controller.user_answer_str}")]
                             await self.context.send_message(group_umo, result)
-                            logger.info(f"已向群{group_umo}发送{user_id}的卡片")
+                            logger.info(f"已向群{group_umo}发送{user_umo}的卡片")
                         except Exception as e:
                             await event.send(event.plain_result("消息发送失败，请检查后台日志"))
                             logger.error(f"向群 {group_umo} 发送消息失败: {e}")
@@ -194,7 +192,9 @@ class MyPlugin(Star):
         # 判断是否为私聊（私聊包括：普通私聊 + 临时会话）
         if event.is_private_chat():
             # 获取用户qq
-            user_id = str(event.get_sender_id())
+            user_umo = event.unified_msg_origin
+            user_umo = str(user_umo).replace(f'{self.bot_name}:FriendMessage:', '')
+            user_id = event.get_sender_id()
             group_umo = f"{self.bot_name}:GroupMessage:{self.examine_group_id}"
             if user_id in self.active_sessions:
                 yield event.plain_result("你已有正在进行的答题，请先完成或等待超时!")
@@ -205,16 +205,11 @@ class MyPlugin(Star):
                 # 注意：不同适配器的 API 方法名可能略有不同
                 member_info = await event.bot.get_group_member_info(
                     group_id=int(self.examine_group_id),
-                    user_id=int(user_id)
+                    user_id=int(user_umo)
                 )
                 if member_info:
                     out = ""
                     check = ""
-                    pre_exam_instructions = self.pre_exam_instructions.format(
-                        finally_questions=self.finally_questions,
-                        limited_time=self.limited_time,
-                        read_time=self.read_time
-                    )
                     if self.randomly_selected_questions:  # 如果开启随机抽题
                         line_list = set()
                         for i in range(int(self.finally_questions)):
@@ -270,13 +265,13 @@ class MyPlugin(Star):
                         try:
                             try:
                                 result = event.make_result()
-                                result.chain = [Plain(f"新人{user_id}开始答题！")]
+                                result.chain = [Plain(f"新人{user_umo}开始答题！")]
                                 await self.context.send_message(group_umo, result)
-                                logger.info(f"用户{user_id}开始答题！")
+                                logger.info(f"用户{user_umo}开始答题！")
                             except Exception as e:
                                 await event.send(event.plain_result("消息发送失败，请检查后台日志"))
                                 logger.error(f"向群 {group_umo} 发送消息失败: {e}")
-                            yield event.plain_result(pre_exam_instructions)
+                            yield event.plain_result(f"考前须知：\n\n请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答abcabcabcabc（前面一定要有“作答”二字！）\n\n总共有{self.finally_questions}道题，写多写少会提示\n请于{self.limited_time}秒内完成答题\n\n题目将于{self.read_time}秒后发送")
                             logger.info("已发送考前须知！")
                             time.sleep(self.read_time)
                             yield event.plain_result(f"考核开始，以下为题目，请于{self.limited_time}秒内完成，现在开始计时\n\n{str(out)}")
@@ -287,7 +282,7 @@ class MyPlugin(Star):
                             # record_history_chains=False: 不记录消息历史（节省内存）
                             @session_waiter(timeout=self.limited_time, record_history_chains=False)
                             async def quiz_waiter(controller: SessionController, event: AstrMessageEvent):
-                                await self._quiz_waiter(controller, event, check, user_id, user_id, group_umo)
+                                await self._quiz_waiter(controller, event, check, user_umo, user_id, group_umo)
                             try:
                                 # ====================启动会话控制器====================
                                 # await 会阻塞在这里，等待用户回复或超时
@@ -299,12 +294,12 @@ class MyPlugin(Star):
                             except TimeoutError:
                                 # 用户规定时间内没有回复，触发超时
                                 yield event.plain_result("答题超时！结束考核！请联系管理员处理，或可尝试再次答题")
-                                logger.info(f"用户{user_id}答题超时！结束考核！")
+                                logger.info(f"用户{user_umo}答题超时！结束考核！")
                                 try:
                                     result = event.make_result()
-                                    result.chain = [Plain(f"❌未通过:新人{user_id}作答超时！")]
+                                    result.chain = [Plain(f"❌未通过:新人{user_umo}作答超时！")]
                                     await self.context.send_message(group_umo, result)
-                                    logger.info(f"已向群{group_umo}发送{user_id}的卡片")
+                                    logger.info(f"已向群{group_umo}发送{user_umo}的卡片")
                                 except Exception as e:
                                     await event.send(event.plain_result("消息发送失败，请检查后台日志"))
                                     logger.error(f"向群 {group_umo} 发送消息失败: {e}")
@@ -373,13 +368,13 @@ class MyPlugin(Star):
                     try:
                         try:
                             result = event.make_result()
-                            result.chain = [Plain(f"新人{user_id}开始答题！")]
+                            result.chain = [Plain(f"新人{user_umo}开始答题！")]
                             await self.context.send_message(group_umo, result)
-                            logger.info(f"用户{user_id}开始答题！")
+                            logger.info(f"用户{user_umo}开始答题！")
                         except Exception as e:
                             await event.send(event.plain_result("消息发送失败，请检查后台日志"))
                             logger.error(f"向群 {group_umo} 发送消息失败: {e}")
-                        yield event.plain_result(pre_exam_instructions)
+                        yield event.plain_result(f"考前须知：\n\n请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答abcabcabcabc（前面一定要有“作答”二字！）\n\n总共有{self.finally_questions}道题，写多写少会提示\n请于{self.limited_time}秒内完成答题\n\n题目将于{self.read_time}秒后发送")
                         logger.info("已发送考前须知！")
                         time.sleep(self.read_time)
                         yield event.plain_result(f"考核开始，以下为题目，请于{self.limited_time}秒内完成，现在开始计时\n\n{str(out)}")
@@ -390,7 +385,7 @@ class MyPlugin(Star):
                         # record_history_chains=False: 不记录消息历史（节省内存）
                         @session_waiter(timeout=self.limited_time, record_history_chains=False)
                         async def quiz_waiter(controller: SessionController, event: AstrMessageEvent):
-                            await self._quiz_waiter(controller, event, check, user_id, user_id, group_umo)
+                            await self._quiz_waiter(controller, event, check, user_umo, user_id, group_umo)
 
                         try:
                             # ====================启动会话控制器====================
@@ -403,12 +398,12 @@ class MyPlugin(Star):
                         except TimeoutError:
                             # 用户规定时间内没有回复，触发超时
                             yield event.plain_result("答题超时！结束考核！请联系管理员处理，或可尝试再次答题")
-                            logger.info(f"用户{user_id}答题超时！结束考核！")
+                            logger.info(f"用户{user_umo}答题超时！结束考核！")
                             try:
                                 result = event.make_result()
-                                result.chain = [Plain(f"❌未通过:新人{user_id}作答超时！")]
+                                result.chain = [Plain(f"❌未通过:新人{user_umo}作答超时！")]
                                 await self.context.send_message(group_umo, result)
-                                logger.info(f"已向群{group_umo}发送{user_id}的卡片")
+                                logger.info(f"已向群{group_umo}发送{user_umo}的卡片")
                             except Exception as e:
                                 await event.send(event.plain_result("消息发送失败，请检查后台日志"))
                                 logger.error(f"向群 {group_umo} 发送消息失败: {e}")
