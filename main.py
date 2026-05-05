@@ -34,6 +34,7 @@ class MyPlugin(Star):
         self.total_score = answer.get("total_score", 100)
         self.passing_line = answer.get("passing_line", 60)
         self.limited_time = answer.get("limited_time", 100)
+        self.read_time = answer.get("read_time", 60)
         self.randomly_selected_questions = answer.get("randomly_selected_questions", False)
         question_bank = config.get("question_bank") or {}
         self.question = question_bank.get("question", "")
