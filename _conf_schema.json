@@ -77,7 +77,7 @@
       "read_time": {
         "description": "阅读时间",
         "type": "int",
-        "hint": "给予新人阅读考前须知的时间，单位为秒（s）",
+        "hint": "给予阅读考前须知的时间，单位为秒（s）",
         "default": 60
       },
       "randomly_selected_questions": {
@@ -91,12 +91,12 @@
   "card": {
     "description": "卡片",
     "type": "object",
-    "hint": "完成答题后向群内发送的新人卡片",
+    "hint": "完成答题后向群内发送的账号卡片",
     "items": {
       "send_user_answer": {
         "description": "发送作答答案",
         "type": "bool",
-        "hint": "是否发送新人作答的答案，默认开启",
+        "hint": "是否发送账号作答的答案，默认开启",
         "default": true
       }
     }

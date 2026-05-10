@@ -99,7 +99,7 @@ class MyPlugin(Star):
                 yield event.chain_result(chain)
 
     async def _quiz_waiter(self, controller: SessionController, event: AstrMessageEvent,
-                           check: str, user_umo: str, user_id: str, group_umo: str):
+                           check: str, user_umo: str, user_id: str, group_umo: str, user_name: str):
         """
         会话控制器的回调函数
         在用户回复消息时会被调用
@@ -131,11 +131,11 @@ class MyPlugin(Star):
                 controller.if_answer = True
                 controller.user_answer = str(answer[2:])
                 await event.send(event.plain_result("是否确定答案？如确定请输入“确定”"))
-                logger.info(f"用户答案为{controller.user_answer}")
+                logger.info(f"账号{user_name}答案为{controller.user_answer}")
                 return
             else:
                 await event.send(event.plain_result("你写多或者写少了！请重写"))
-                logger.info(f"用户{user_umo}写多或者写少了！请重写")
+                logger.info(f"账号{user_name}{user_umo}写多或者写少了！请重写")
                 return
 
         elif answer == "确定":
@@ -152,11 +152,11 @@ class MyPlugin(Star):
                     await event.send(event.plain_result(
                         f"恭喜！你以{controller.mark}分的成绩通过了考核！请加入主群：{self.main_group_id}并退出审核群！"))
                     logger.info(
-                        f"恭喜！用户{user_umo}以{controller.mark}分的成绩通过了考核！请加入主群：{self.main_group_id}并退出审核群！")
+                        f"恭喜！账号{user_name}{user_umo}以{controller.mark}分的成绩通过了考核！请加入主群：{self.main_group_id}并退出审核群！")
                     if self.send_user_answer:
                         try:
                             result = event.make_result()
-                            result.chain = [Plain(f"✅通过:新人{user_umo}以{controller.mark}分的成绩通过了考核！\n答案：\n{controller.user_answer_str}")]
+                            result.chain = [Plain(f"✅通过:账号{user_name}{user_umo}以{controller.mark}分的成绩通过了考核！\n答案：\n{controller.user_answer_str}")]
                             logger.info(f"已向群{group_umo}发送{user_umo}的卡片")
                             await self.context.send_message(group_umo, result)
                         except Exception as e:
@@ -169,12 +169,12 @@ class MyPlugin(Star):
                     await event.send(event.plain_result(
                         f"你的成绩{controller.mark}分低于及格线{self.passing_line}分没有通过，请自觉退群"))
                     logger.error(
-                        f"用户{user_umo}的成绩{controller.mark}分低于及格线{self.passing_line}分没有通过，请自觉退群")
+                        f"账号{user_name}{user_umo}的成绩{controller.mark}分低于及格线{self.passing_line}分没有通过，请自觉退群")
                     if self.send_user_answer:
                         try:
                             result = event.make_result()
                             result.chain = [Plain(
-                                f"❌未通过:新人{user_umo}的成绩{controller.mark}分低于及格线{self.passing_line}分，未通过！\n答案：\n{controller.user_answer_str}")]
+                                f"❌未通过:账号{user_name}{user_umo}的成绩{controller.mark}分低于及格线{self.passing_line}分，未通过！\n答案：\n{controller.user_answer_str}")]
                             await self.context.send_message(group_umo, result)
                             logger.info(f"已向群{group_umo}发送{user_umo}的卡片")
                         except Exception as e:
@@ -193,6 +193,7 @@ class MyPlugin(Star):
         # 判断是否为私聊（私聊包括：普通私聊 + 临时会话）
         if event.is_private_chat():
             # 获取用户qq
+            user_name = event.get_sender_name()
             user_umo = event.unified_msg_origin
             user_umo = str(user_umo).replace(f'{self.bot_name}:FriendMessage:', '')
             user_id = event.get_sender_id()
@@ -283,7 +284,7 @@ class MyPlugin(Star):
                             # record_history_chains=False: 不记录消息历史（节省内存）
                             @session_waiter(timeout=self.limited_time, record_history_chains=False)
                             async def quiz_waiter(controller: SessionController, event: AstrMessageEvent):
-                                await self._quiz_waiter(controller, event, check, user_umo, user_id, group_umo)
+                                await self._quiz_waiter(controller, event, check, user_umo, user_id, group_umo, user_name)
                             try:
                                 # ====================启动会话控制器====================
                                 # await 会阻塞在这里，等待用户回复或超时
@@ -386,7 +387,7 @@ class MyPlugin(Star):
                         # record_history_chains=False: 不记录消息历史（节省内存）
                         @session_waiter(timeout=self.limited_time, record_history_chains=False)
                         async def quiz_waiter(controller: SessionController, event: AstrMessageEvent):
-                            await self._quiz_waiter(controller, event, check, user_umo, user_id, group_umo)
+                            await self._quiz_waiter(controller, event, check, user_umo, user_id, group_umo, user_name)
 
                         try:
                             # ====================启动会话控制器====================
