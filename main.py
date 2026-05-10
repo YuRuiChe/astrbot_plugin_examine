@@ -267,9 +267,9 @@ class MyPlugin(Star):
                         try:
                             try:
                                 result = event.make_result()
-                                result.chain = [Plain(f"新人{user_umo}开始答题！")]
+                                result.chain = [Plain(f"账号{user_name}{user_umo}开始答题！")]
                                 await self.context.send_message(group_umo, result)
-                                logger.info(f"用户{user_umo}开始答题！")
+                                logger.info(f"账号{user_name}{user_umo}开始答题！")
                             except Exception as e:
                                 await event.send(event.plain_result("消息发送失败，请检查后台日志"))
                                 logger.error(f"向群 {group_umo} 发送消息失败: {e}")
@@ -296,10 +296,10 @@ class MyPlugin(Star):
                             except TimeoutError:
                                 # 用户规定时间内没有回复，触发超时
                                 yield event.plain_result("答题超时！结束考核！请联系管理员处理，或可尝试再次答题")
-                                logger.info(f"用户{user_umo}答题超时！结束考核！")
+                                logger.info(f"账号{user_umo}答题超时！结束考核！")
                                 try:
                                     result = event.make_result()
-                                    result.chain = [Plain(f"❌未通过:新人{user_umo}作答超时！")]
+                                    result.chain = [Plain(f"❌未通过:账号{user_name}{user_umo}作答超时！")]
                                     await self.context.send_message(group_umo, result)
                                     logger.info(f"已向群{group_umo}发送{user_umo}的卡片")
                                 except Exception as e:
@@ -370,9 +370,9 @@ class MyPlugin(Star):
                     try:
                         try:
                             result = event.make_result()
-                            result.chain = [Plain(f"新人{user_umo}开始答题！")]
+                            result.chain = [Plain(f"账号{user_name}{user_umo}开始答题！")]
                             await self.context.send_message(group_umo, result)
-                            logger.info(f"用户{user_umo}开始答题！")
+                            logger.info(f"账号{user_name}{user_umo}开始答题！")
                         except Exception as e:
                             await event.send(event.plain_result("消息发送失败，请检查后台日志"))
                             logger.error(f"向群 {group_umo} 发送消息失败: {e}")
@@ -400,10 +400,10 @@ class MyPlugin(Star):
                         except TimeoutError:
                             # 用户规定时间内没有回复，触发超时
                             yield event.plain_result("答题超时！结束考核！请联系管理员处理，或可尝试再次答题")
-                            logger.info(f"用户{user_umo}答题超时！结束考核！")
+                            logger.info(f"账号{user_name}{user_umo}答题超时！结束考核！")
                             try:
                                 result = event.make_result()
-                                result.chain = [Plain(f"❌未通过:新人{user_umo}作答超时！")]
+                                result.chain = [Plain(f"❌未通过:账号{user_name}{user_umo}作答超时！")]
                                 await self.context.send_message(group_umo, result)
                                 logger.info(f"已向群{group_umo}发送{user_umo}的卡片")
                             except Exception as e:
