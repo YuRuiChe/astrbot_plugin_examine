@@ -432,11 +432,15 @@ class MyPlugin(Star):
                         return
                 else:
                     yield event.plain_result(f"你不在群 {self.examine_group_id} 中！请尝试先加群！")
+                    if user_id in self.active_sessions:
+                        del self.active_sessions[user_id]
                     return
             except Exception as e:
             # API 报错通常意味着用户不在群中或网络问题
                 logger.error(f"查询成员失败: {e}")
                 yield event.plain_result(f"你不在群 {self.examine_group_id} 中！（或查询失败）请尝试先加群！")
+                if user_id in self.active_sessions:
+                    del self.active_sessions[user_id]
                 return
         else:
             yield event.plain_result("请在私聊或临时会话中使用该指令")
