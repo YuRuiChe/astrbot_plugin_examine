@@ -207,7 +207,7 @@ class MyPlugin(Star):
                 # 注意：不同适配器的 API 方法名可能略有不同
                 member_info = await event.bot.get_group_member_info(
                     group_id=int(self.examine_group_id),
-                    user_id=int(user_umo)
+                    user_id=int(user_id)
                 )
                 if member_info:
                     out = ""
