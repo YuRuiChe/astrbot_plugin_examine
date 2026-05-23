@@ -16,7 +16,7 @@ from pathlib import Path
 from psutil import boot_time
 
 
-@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v2.2", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v2.3", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -44,8 +44,6 @@ class MyPlugin(Star):
         self.question = os.path.abspath(self.question)
         self.option = os.path.abspath(self.option)
         self.answer = os.path.abspath(self.answer)
-        llm = config.get("llm") or {}
-        self.disable_llm = llm.get("disable_llm", False)
         card = config.get("card") or {}
         self.send_user_answer = card.get("send_user_answer", True)
         self.active_sessions = {}  # 用于记录活跃会话 {user_id: controller}
@@ -192,10 +190,8 @@ class MyPlugin(Star):
         """开始进行答题"""
         # 判断是否为私聊（私聊包括：普通私聊 + 临时会话）
         if event.is_private_chat():
-            # 获取用户qq
-            user_name = event.get_sender_name()
             user_umo = event.unified_msg_origin
-            user_umo = str(user_umo).replace(f'{self.bot_name}:FriendMessage:', '')
+            user_umo = str(user_umo).replace(f'{self.bot_name}:FriendMessage:', '')# 获取用户qq号
             user_id = event.get_sender_id()
             group_umo = f"{self.bot_name}:GroupMessage:{self.examine_group_id}"
             if user_id in self.active_sessions:
@@ -212,6 +208,7 @@ class MyPlugin(Star):
                 if member_info:
                     out = ""
                     check = ""
+                    user_name = member_info.get("card") or member_info.get("nickname") or str(user_id)# 获取用户qq昵称
                     if self.randomly_selected_questions:  # 如果开启随机抽题
                         line_list = set()
                         for i in range(int(self.finally_questions)):
