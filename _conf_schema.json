@@ -35,7 +35,7 @@
       "whether_at": {
         "description": "入群at",
         "type": "bool",
-        "hint": "是否需要at发送入群欢迎消息，默认关闭",
+        "hint": "是否需要at发送入群提示，默认关闭",
         "default": false
       }
     }

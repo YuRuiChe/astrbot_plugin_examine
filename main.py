@@ -16,7 +16,7 @@ from pathlib import Path
 from psutil import boot_time
 
 
-@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v2.3", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v2.4", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -60,6 +60,9 @@ class MyPlugin(Star):
             return  # 原始消息格式不正确，退出
         # 只处理通知类事件（notice），不处理消息类事件
         if raw_message.get("post_type") != "notice":
+            return
+        group_id = raw_message.get("group_id") 
+        if str(group_id) != self.examine_group_id:
             return
         if event.is_private_chat():
             return
