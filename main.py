@@ -16,7 +16,7 @@ from pathlib import Path
 from psutil import boot_time
 
 
-@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v2.4", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v2.5", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -29,7 +29,6 @@ class MyPlugin(Star):
         self.reminder_imgs = group_entry_reminder.get("reminder_img", "")
         self.whether_at = group_entry_reminder.get("whether_at", False)
         answer = config.get("answer") or {}
-        self.total_number_of_questions = answer.get("total_number_of_questions", 0)
         self.finally_questions = answer.get("finally_questions", 15)
         self.total_score = answer.get("total_score", 100)
         self.passing_line = answer.get("passing_line", 60)
@@ -37,13 +36,9 @@ class MyPlugin(Star):
         self.read_time = answer.get("read_time", 60)
         self.randomly_selected_questions = answer.get("randomly_selected_questions", False)
         question_bank = config.get("question_bank") or {}
-        self.question = question_bank.get("question", "")
-        self.option = question_bank.get("option", "")
-        self.answer = question_bank.get("answer", "")
+        self.question_bank_file = question_bank.get("question_bank_file", "")
         # 在读取文件之前，先规范化路径
-        self.question = os.path.abspath(self.question)
-        self.option = os.path.abspath(self.option)
-        self.answer = os.path.abspath(self.answer)
+        self.question_bank_file = os.path.abspath(self.question_bank_file)
         card = config.get("card") or {}
         self.send_user_answer = card.get("send_user_answer", True)
         self.active_sessions = {}  # 用于记录活跃会话 {user_id: controller}
@@ -212,11 +207,21 @@ class MyPlugin(Star):
                     out = ""
                     check = ""
                     user_name = member_info.get("card") or member_info.get("nickname") or str(user_id)# 获取用户qq昵称
+                    # 读取题库
+                    try:
+                        with open(self.question_bank_file, 'r', encoding='utf-8') as f:
+                            question_bank_file = json.load(f)
+                    except FileNotFoundError:
+                        logger.error(f"文件不存在: {self.question}")
+                        return
+                    except Exception as e:
+                        logger.error(f"读取文件出错: {e}")
+                        return
                     if self.randomly_selected_questions:  # 如果开启随机抽题
                         line_list = set()
                         for i in range(int(self.finally_questions)):
                             while True:
-                                line = random.randint(1, self.total_number_of_questions)
+                                line = random.randint(1, len(question_bank_file))
                                 # 检查这个题号是否已经被抽过
                                 if line not in line_list:
                                     # 没抽过 → 把它加入已抽集合
@@ -225,41 +230,11 @@ class MyPlugin(Star):
                                     break
                                 # 如果抽过了，不会执行 break，会继续 while 循环重新随机
                             try:
-                                # 问题
-                                with open(self.question, 'r', encoding='utf-8') as f:
-                                    q = next(islice(f, line - 1, line), None)
-                                    if q:
-                                        q = q.rstrip('\n')
-                            except FileNotFoundError:
-                                logger.error(f"文件不存在: {self.question}")
-                                return
-                            except Exception as e:
-                                logger.error(f"读取文件出错: {e}")
-                                return
-                            try:
-                                # 选项
-                                with open(self.option, 'r', encoding='utf-8') as f:
-                                    o = next(islice(f, line - 1, line), None)
-                                    if o:
-                                        o = o.rstrip('\n')
-                                        o = o.replace('[)', '\n')
-                            except FileNotFoundError:
-                                logger.error(f"文件不存在: {self.option}")
-                                return
-                            except Exception as e:
-                                logger.error(f"读取文件出错: {e}")
-                                return
-                            try:
-                                # 答案
-                                with open(self.answer, 'r', encoding='utf-8') as f:
-                                    a = next(islice(f, line - 1, line), None)
-                                    if a:
-                                        a = a.rstrip('\n')
-                            except FileNotFoundError:
-                                logger.error(f"文件不存在: {self.answer}")
-                                return
-                            except Exception as e:
-                                logger.error(f"读取文件出错: {e}")
+                                q = question_bank_file[str(line)]['question']
+                                o = question_bank_file[str(line)]['option']
+                                a = question_bank_file[str(line)]['answer']
+                            except KeyError:
+                                logger.error(f"键不存在: {str(i+1)}")
                                 return
                             out = str(out) + f"\n{str(q)}\n{str(o)}\n"
                             check = str(check) + f"{str(a)}"
@@ -328,45 +303,16 @@ class MyPlugin(Star):
                             return
 
                     else:  # 没开启随机抽题
-                        try:
-                            # 问题
-                            with open(self.question, 'r', encoding='utf-8') as f:
-                                q = next(islice(f, self.finally_questions - 1, self.finally_questions), None)
-                                if q:
-                                    q = q.rstrip('\n')
-                        except FileNotFoundError:
-                            logger.error(f"文件不存在: {self.question}")
-                            return
-                        except Exception as e:
-                            logger.error(f"读取文件出错: {e}")
-                            return
-                        try:
-                            # 选项
-                            with open(self.option, 'r', encoding='utf-8') as f:
-                                o = next(islice(f, self.finally_questions - 1, self.finally_questions), None)
-                                if o:
-                                    o = o.rstrip('\n')
-                                    o = o.replace('[)', '\n')
-                        except FileNotFoundError:
-                            logger.error(f"文件不存在: {self.option}")
-                            return
-                        except Exception as e:
-                            logger.error(f"读取文件出错: {e}")
-                            return
-                        try:
-                            # 答案
-                            with open(self.answer, 'r', encoding='utf-8') as f:
-                                a = next(islice(f, self.finally_questions - 1, self.finally_questions), None)
-                                if a:
-                                    a = a.rstrip('\n')
-                        except FileNotFoundError:
-                            logger.error(f"文件不存在: {self.answer}")
-                            return
-                        except Exception as e:
-                            logger.error(f"读取文件出错: {e}")
-                            return
-                        out = str(out) + f"\n{str(q)}\n{str(o)}\n"
-                        check = str(check) + f"{str(a)}"
+                        for i in range(int(self.finally_questions)):
+                            try:
+                                q = question_bank_file[str(i+1)]['question']
+                                o = question_bank_file[str(i+1)]['option']
+                                a = question_bank_file[str(i+1)]['answer']
+                            except KeyError:
+                                logger.error(f"键不存在: {str(i+1)}")
+                                return
+                            out = str(out) + f"\n{str(q)}\n{str(o)}\n"
+                            check = str(check) + f"{str(a)}"
                     try:
                         try:
                             result = event.make_result()

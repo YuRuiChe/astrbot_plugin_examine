@@ -44,12 +44,6 @@
     "description": "作答",
     "type": "object",
     "items": {
-      "total_number_of_questions": {
-        "description": "总题数",
-        "type": "int",
-        "hint": "题库中有多少题",
-        "default": 0
-      },
       "finally_questions": {
         "description": "输出题数",
         "type": "int",
@@ -106,22 +100,10 @@
     "type": "object",
     "hint": "请移动文件于data文件夹下，并填写相应的txt文件路径",
     "items": {
-      "question": {
-        "description": "问题",
+      "question_bank_file": {
+        "description": "题库文件（.json）",
         "type": "string",
-        "hint": "示例：data/问题.txt",
-        "default": ""
-      },
-      "option": {
-        "description": "选项",
-        "type": "string",
-        "hint": "示例：data/选项.txt",
-        "default": ""
-      },
-      "answer": {
-        "description": "答案",
-        "type": "string",
-        "hint": "示例：data/答案.txt",
+        "hint": "示例：data/question_bank.json",
         "default": ""
       }
     }
