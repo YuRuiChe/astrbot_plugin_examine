@@ -1,5 +1,11 @@
 # 📝 更新日志
 
+- ## v2.1.0
+  - 新增了“stream_output_question”配置
+  - 更改了“randomly_selected_questions”和“stream_output_question”配置在配置文件中的位置
+  - 更改了会话控制器部分的代码
+  - 更改了抽题部分的代码
+
 - ## v2.0.1
   - 更改了README.md的内容
 

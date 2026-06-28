@@ -44,6 +44,18 @@
     "description": "作答",
     "type": "object",
     "items": {
+      "randomly_selected_questions": {
+        "description": "随机抽题",
+        "type": "bool",
+        "hint": "是否需要进行随机抽题。若开启，则从题库中随机抽出题目；若关闭，则按照题目的先后顺序排列。默认关闭",
+        "default": false
+      },
+      "stream_output_question": {
+        "description": "流式输出题目",
+        "type": "bool",
+        "hint": "作答时使题目一题一题发送，可避免漏答。默认关闭",
+        "default": false
+      },
       "finally_questions": {
         "description": "输出题数",
         "type": "int",
@@ -73,12 +85,6 @@
         "type": "int",
         "hint": "给予阅读考前须知的时间，单位为秒（s）",
         "default": 60
-      },
-      "randomly_selected_questions": {
-        "description": "随机抽题",
-        "type": "bool",
-        "hint": "是否需要进行随机抽题。若开启，则从题库中随机抽出题目；若关闭，则按照题目的先后顺序排列。默认关闭",
-        "default": false
       }
     }
   },
