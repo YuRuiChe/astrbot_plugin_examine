@@ -15,7 +15,7 @@ from pathlib import Path
 from psutil import boot_time
 
 
-@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v2.1.1", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v2.1.2", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -152,7 +152,6 @@ class MyPlugin(Star):
                                 return
                             out = str(out) + f"\n{str(q)}\n{str(o)}\n"
                             check = str(check) + f"{str(a)}"
-                        return
                     elif self.randomly_selected_questions is False:  # 没开启随机抽题
                         for i in range(int(self.finally_questions)):
                             try:
@@ -165,7 +164,6 @@ class MyPlugin(Star):
                                 return
                             out = str(out) + f"\n{str(q)}\n{str(o)}\n"
                             check = str(check) + f"{str(a)}"
-                        return
                     try:
                         try:
                             result = event.make_result()
