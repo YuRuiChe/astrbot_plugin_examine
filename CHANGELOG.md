@@ -1,5 +1,8 @@
 # 📝 更新日志
 
+- ## v2.1.1
+  - 增加了几行删除正在进行的答题的代码
+
 - ## v2.1.0
   - 新增了“stream_output_question”配置
   - 更改了“randomly_selected_questions”和“stream_output_question”配置在配置文件中的位置

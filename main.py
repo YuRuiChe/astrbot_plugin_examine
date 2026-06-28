@@ -15,7 +15,7 @@ from pathlib import Path
 from psutil import boot_time
 
 
-@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v2.1.0", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+@register("astrbot_plugin_examine", "语芮澈", "功能完善的入群自动考核插件！", "v2.1.1", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -93,7 +93,7 @@ class MyPlugin(Star):
                     Comp.Plain(welcome_message),
                 ]
                 yield event.chain_result(chain)
-                
+
     @filter.command("开始答题")
     async def start_answer(self, event: AstrMessageEvent):
         """开始进行答题"""
@@ -124,9 +124,11 @@ class MyPlugin(Star):
                             question_bank_file = json.load(f)
                     except FileNotFoundError:
                         logger.error(f"文件不存在: {self.question}")
+                        del self.active_sessions[user_id]
                         return
                     except Exception as e:
                         logger.error(f"读取文件出错: {e}")
+                        del self.active_sessions[user_id]
                         return
                     if self.randomly_selected_questions:  # 如果开启随机抽题
                         line_list = set()
@@ -146,6 +148,7 @@ class MyPlugin(Star):
                                 a = question_bank_file[str(line)]['answer']
                             except KeyError:
                                 logger.error(f"键不存在: {str(i+1)}")
+                                del self.active_sessions[user_id]
                                 return
                             out = str(out) + f"\n{str(q)}\n{str(o)}\n"
                             check = str(check) + f"{str(a)}"
@@ -158,6 +161,7 @@ class MyPlugin(Star):
                                 a = question_bank_file[str(i+1)]['answer']
                             except KeyError:
                                 logger.error(f"键不存在: {str(i+1)}")
+                                del self.active_sessions[user_id]
                                 return
                             out = str(out) + f"\n{str(q)}\n{str(o)}\n"
                             check = str(check) + f"{str(a)}"
@@ -171,6 +175,7 @@ class MyPlugin(Star):
                         except Exception as e:
                             await event.send(event.plain_result("消息发送失败，请检查后台日志"))
                             logger.error(f"向群 {group_umo} 发送消息失败: {e}")
+                            del self.active_sessions[user_id]
                             return
                         yield event.plain_result(f"考前须知：\n\n请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答abcabcabcabc（前面一定要有“作答”二字！）\n\n总共有{self.finally_questions}道题，写多写少会提示\n请于{self.limited_time}秒内完成答题\n\n题目将于{self.read_time}秒后发送")
                         logger.info("已发送考前须知！")
