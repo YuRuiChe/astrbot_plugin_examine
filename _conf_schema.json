@@ -51,7 +51,7 @@
         "default": false
       },
       "stream_output_question": {
-        "description": "流式输出题目",
+        "description": "逐题发送",
         "type": "bool",
         "hint": "作答时使题目一题一题发送，可避免漏答。默认关闭",
         "default": false
