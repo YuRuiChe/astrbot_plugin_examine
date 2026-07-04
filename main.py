@@ -10,6 +10,7 @@ import os
 import time
 from itertools import islice
 import aiohttp
+import asyncio
 import random
 from pathlib import Path
 from psutil import boot_time
@@ -327,10 +328,6 @@ class MyPlugin(Star):
                             del self.active_sessions[user_id]
                             return
 
-                        yield event.plain_result(f"考前须知：\n\n请使用“作答”指令以答题，“确定”指令以结束答题，“跳转“指令以跳转题目\n示例：\n作答a（表示填写第一道题的答案）\n跳转1（表示跳转到第1题）\n\n总共有{self.finally_questions}道题\n请于{self.limited_time}秒内完成答题\n\n题目将于{self.read_time}秒后发送")
-                        logger.info("已发送考前须知！")
-                        time.sleep(self.read_time)
-
                         # ==================== 生成题目列表（按顺序或随机） ====================
                         question_keys = list(question_bank_file.keys())
 
@@ -360,6 +357,9 @@ class MyPlugin(Star):
                         if actual_total < self.finally_questions:
                             logger.warning(f"实际题目数量{actual_total}少于设定{self.finally_questions}，将按实际数量进行")
                             self.finally_questions = actual_total
+
+                        yield event.plain_result(f"考前须知：\n\n请使用“作答”指令以答题，“确定”指令以结束答题，“跳转“指令以跳转题目\n示例：\n作答a（表示填写第一道题的答案）\n跳转1（表示跳转到第1题）\n\n总共有{self.finally_questions}道题\n请于{self.limited_time}秒内完成答题\n\n题目将于{self.read_time}秒后发送")
+                        logger.info("已发送考前须知！")
 
                         # ==================== 会话控制器（逐题交互） ====================
                         @session_waiter(timeout=self.limited_time, record_history_chains=False)
@@ -558,6 +558,7 @@ class MyPlugin(Star):
                                         await event.send(event.plain_result("消息发送失败，请检查后台日志"))
                                         logger.error(f"向群 {group_umo} 发送消息失败: {e}")
 
+                        time.sleep(self.read_time)
                         # ===== 启动会话 =====
                         try:
                             await quiz_waiter(event)
