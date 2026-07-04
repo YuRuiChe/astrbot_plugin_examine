@@ -255,7 +255,7 @@ class MyPlugin(Star):
                                         else:
                                             await event.send(event.plain_result(
                                                 f"你的成绩{controller.mark}分低于及格线{self.passing_line}分没有通过！请联系管理员处理，或可尝试再次答题"))
-                                            logger.error(
+                                            logger.info(
                                                 f"账号{user_name}{user_umo}的成绩{controller.mark}分低于及格线{self.passing_line}分没有通过，请自觉退群")
                                             if self.send_user_answer:
                                                 try:
