@@ -558,7 +558,7 @@ class MyPlugin(Star):
                                         await event.send(event.plain_result("消息发送失败，请检查后台日志"))
                                         logger.error(f"向群 {group_umo} 发送消息失败: {e}")
 
-                        time.sleep(self.read_time)
+                        await asyncio.sleep(self.read_time)
                         # ===== 启动会话 =====
                         try:
                             await quiz_waiter(event)
