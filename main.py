@@ -545,7 +545,7 @@ class MyPlugin(Star):
                                 await event.send(event.plain_result(
                                     f"你的成绩{final_score}分低于及格线{self.passing_line}分没有通过！请联系管理员处理，或可尝试再次答题"
                                 ))
-                                logger.error(f"账号{user_name}{user_umo}的成绩{final_score}分低于及格线{self.passing_line}分，未通过")
+                                logger.info(f"账号{user_name}{user_umo}的成绩{final_score}分低于及格线{self.passing_line}分，未通过")
                                 if self.send_user_answer:
                                     try:
                                         result = event.make_result()
