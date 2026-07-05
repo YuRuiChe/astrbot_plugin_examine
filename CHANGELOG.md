@@ -1,5 +1,8 @@
 # 📝 更新日志
 
+## v2.2.5
+- 将`main_group_id` `examine_group_id` `bot_name`配置整合至`foundation`中
+
 ## v2.2.4
 - 更改了README.md的内容
 - 更改了metadata.yaml中的`desc`字段

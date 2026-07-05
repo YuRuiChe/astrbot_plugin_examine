@@ -16,14 +16,15 @@ from pathlib import Path
 from psutil import boot_time
 
 
-@register("astrbot_plugin_examine", "语芮澈", "简简单单的入群自动考核插件", "v2.2.4", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+@register("astrbot_plugin_examine", "语芮澈", "简简单单的入群自动考核插件", "v2.2.5", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
         self.config = config
-        self.main_group_id = config.get("main_group_id", "")
-        self.examine_group_id = config.get("examine_group_id", "")
-        self.bot_name = config.get("bot_name", "")
+        foundation = config.get("foundation") or {}
+        self.main_group_id = foundation.get("main_group_id", "")
+        self.examine_group_id = foundation.get("examine_group_id", "")
+        self.bot_name = foundation.get("bot_name", "")
         group_entry_reminder = config.get("group_entry_reminder") or {}
         self.reminder_text = group_entry_reminder.get("reminder_text", "欢迎！请私聊发送“开始答题”以开始测试")
         self.reminder_imgs = group_entry_reminder.get("reminder_img", "")

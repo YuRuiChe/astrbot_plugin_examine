@@ -1,21 +1,27 @@
 {
-  "main_group_id": {
-    "description": "主群群号",
-    "type": "string",
-    "hint": "大群",
-    "default": ""
-  },
-  "examine_group_id": {
-    "description": "审核群群号",
-    "type": "string",
-    "hint": "小群",
-    "default": ""
-  },
-  "bot_name": {
-    "description": "BOT名称",
-    "type": "string",
-    "hint": "你的bot在astrbot平台上的名称",
-    "default": ""
+  "foundation": {
+    "description": "基本",
+    "type": "object",
+    "items": {
+      "main_group_id": {
+        "description": "主群群号",
+        "type": "string",
+        "hint": "大群",
+        "default": ""
+      },
+      "examine_group_id": {
+        "description": "审核群群号",
+        "type": "string",
+        "hint": "小群",
+        "default": ""
+      },
+      "bot_name": {
+        "description": "BOT名称",
+        "type": "string",
+        "hint": "你的bot在astrbot平台上的名称",
+        "default": ""
+      }
+    }
   },
   "group_entry_reminder": {
     "description": "入群提示",
