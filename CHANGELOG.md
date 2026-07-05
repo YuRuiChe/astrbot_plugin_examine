@@ -1,5 +1,9 @@
 # 📝 更新日志
 
+## v2.2.4
+- 更改了README.md的内容
+- 更改了metadata.yaml中的`desc`字段
+
 ## v2.2.3
 - 更改了README.md的内容
 
