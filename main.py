@@ -16,7 +16,8 @@ from pathlib import Path
 from psutil import boot_time
 
 
-@register("astrbot_plugin_examine", "语芮澈", "简简单单的入群自动考核插件", "v3.0.0", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+
+@register("astrbot_plugin_examine", "语芮澈", "简简单单的入群自动考核插件", "v3.0.1", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -409,7 +410,7 @@ class MyPlugin(Star):
                                     return False
                                 target_idx = target_num - 1
                                 if target_idx == controller.current_index:
-                                    await event.send(event.plain_result("您已在此题，无需跳转"))
+                                    await event.send(event.plain_result("你已在此题，无需跳转"))
                                     return False
                                 # 跳转后，当前题不计分，重置状态
                                 controller.current_index = target_idx
@@ -428,7 +429,7 @@ class MyPlugin(Star):
                                     controller.temp_answer = user_input[2:]
                                     controller.if_answer = True
                                     controller.state = 'waiting_confirm'
-                                    await event.send(event.plain_result(f"已收到答案：{controller.temp_answer}，请输入“确定”提交或“跳转N”跳转"))
+                                    await event.send(event.plain_result(f"已收到答案：{controller.temp_answer}，请输入“确定”提交答案或“跳转N”跳转到指定题目（不会保留当前答案！）"))
                                     logger.info(f"账号{user_name}{user_umo}提交答案：{controller.temp_answer}")
                                     return
                                 # 检查是否 "跳转N"
@@ -442,25 +443,33 @@ class MyPlugin(Star):
                                         await event.send(event.plain_result("格式错误！请使用“跳转N”，N为数字（如跳转3）"))
                                         return
                                 else:
-                                    await event.send(event.plain_result("请先输入“作答X”回答当前题目，或“跳转N”跳转"))
+                                    await event.send(event.plain_result("请先输入“作答X”回答当前题目，或“跳转N”跳转到指定题目（不会保留当前答案！）"))
                                     return
 
                             # 状态2: 等待用户确认答案
                             elif controller.state == 'waiting_confirm':
+                                # 允许用户覆盖答案（再次输入“作答X”）
+                                if user_input.startswith("作答") and len(user_input[2:]) == 1:
+                                    new_answer = user_input[2:]
+                                    controller.temp_answer = new_answer   # 覆盖之前的答案
+                                    controller.if_answer = True           # 确保标记为已作答
+                                    await event.send(event.plain_result(f"答案已更新为：{new_answer}，请输入“确定”提交或“跳转N”跳转到指定题目（不会保留当前答案！）"))
+                                    logger.info(f"账号{user_name}{user_umo}更新答案：{new_answer}")
+                                    return
                                 # 用户输入 "确定"
                                 if user_input == "确定":
                                     if not controller.if_answer:
                                         await event.send(event.plain_result("您还未作答，请先输入“作答X”"))
                                         return
                                     # 判题
+                                    await event.send(event.plain_result("已退出答题模式，正在审核中"))
+                                    logger.info("已退出答题模式，正在审核中")
                                     correct_answer = controller.question_list[controller.current_index]['answer'].strip()
                                     if controller.temp_answer == correct_answer:
                                         controller.score += self.total_score / self.finally_questions
                                         controller.user_answer_str += f"|✅{controller.current_index+1}{controller.temp_answer}"
-                                        logger.info(f"账号{user_name}{user_umo}第{controller.current_index+1}题正确")
                                     else:
                                         controller.user_answer_str += f"|❌{controller.current_index+1}{controller.temp_answer}"
-                                        logger.info(f"账号{user_name}{user_umo}第{controller.current_index+1}题错误，正确答案为{correct_answer}")
                                     # 移动到下一题
                                     controller.current_index += 1
                                     controller.if_answer = False
