@@ -17,7 +17,7 @@ from psutil import boot_time
 
 
 
-@register("astrbot_plugin_examine", "语芮澈", "简简单单的入群自动考核插件", "v3.0.1", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+@register("astrbot_plugin_examine", "语芮澈", "简简单单的入群自动考核插件", "v3.0.2", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -462,8 +462,6 @@ class MyPlugin(Star):
                                         await event.send(event.plain_result("您还未作答，请先输入“作答X”"))
                                         return
                                     # 判题
-                                    await event.send(event.plain_result("已退出答题模式，正在审核中"))
-                                    logger.info("已退出答题模式，正在审核中")
                                     correct_answer = controller.question_list[controller.current_index]['answer'].strip()
                                     if controller.temp_answer == correct_answer:
                                         controller.score += self.total_score / self.finally_questions
