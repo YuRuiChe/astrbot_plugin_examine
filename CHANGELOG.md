@@ -1,5 +1,9 @@
 # 📝 更新日志
 
+## v3.0.1
+- 优化了部分提示文本
+- 修复了在开启逐题发送时无法修改作答答案的bug
+
 ## v3.0.0
 - 将`main_group_id` `examine_group_id` `bot_name`配置整合至`foundation`中
 
