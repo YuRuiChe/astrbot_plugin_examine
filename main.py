@@ -17,7 +17,7 @@ from psutil import boot_time
 
 
 
-@register("astrbot_plugin_examine", "语芮澈", "简简单单的入群自动考核插件", "v3.0.2", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+@register("astrbot_plugin_examine", "语芮澈", "简简单单的入群自动考核插件", "v3.0.3", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -496,10 +496,10 @@ class MyPlugin(Star):
                                         await jump_to_question(target)
                                         return
                                     else:
-                                        await event.send(event.plain_result("格式错误！请使用“跳转N”，N为数字"))
+                                        await event.send(event.plain_result("格式错误！请使用“跳转N”跳转到指定题目（不会保留当前答案！），N为数字"))
                                         return
                                 else:
-                                    await event.send(event.plain_result("请输入“确定”提交当前答案，或“跳转N”跳转"))
+                                    await event.send(event.plain_result("请输入“确定”提交当前答案，或“跳转N”跳转到指定题目（不会保留当前答案！）"))
                                     return
 
                             # 状态3: 等待最终确认（所有题已答完）
