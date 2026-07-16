@@ -5,6 +5,7 @@ from astrbot.api import logger # 使用 astrbot 提供的 logger 接口
 import astrbot.api.message_components as Comp
 from astrbot.api.message_components import Plain
 from astrbot.core.utils.session_waiter import session_waiter, SessionController  # 会话控制器
+from astrbot.core.utils.astrbot_path import get_astrbot_data_path
 import json
 import os
 import time
@@ -17,7 +18,7 @@ from psutil import boot_time
 
 
 
-@register("astrbot_plugin_examine", "语芮澈", "简简单单的入群自动考核插件", "v3.0.3", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+@register("astrbot_plugin_examine", "语芮澈", "简简单单的入群自动考核插件", "v3.1.0", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -45,6 +46,14 @@ class MyPlugin(Star):
         card = config.get("card") or {}
         self.send_user_answer = card.get("send_user_answer", True)
         self.active_sessions = {}  # 用于记录活跃会话 {user_id: controller}
+        # 获取 AstrBot 数据根目录
+        data_root = Path(get_astrbot_data_path())
+        # 拼接插件数据目录路径
+        plugin_data_dir = data_root / "plugin_data" / "astrbot_plugin_examine"
+        # 创建目录（如果不存在）
+        plugin_data_dir.mkdir(parents=True, exist_ok=True)
+        # 保存为实例变量（暂时没用）
+        # self.plugin_data_dir = plugin_data_dir
 
     @filter.event_message_type(filter.EventMessageType.ALL)  # 监听所有类型的消息事件（包括群消息、私聊、通知等）
     async def handle_group_add(self, event: AstrMessageEvent):
@@ -221,11 +230,11 @@ class MyPlugin(Star):
                                         controller.if_answer = True
                                         controller.user_answer = str(answer[2:])
                                         await event.send(event.plain_result("是否确定答案？如确定请输入“确定”"))
-                                        logger.info(f"账号{user_name}答案为{controller.user_answer}")
+                                        logger.info(f"账号 {user_name} 答案为 {controller.user_answer} ")
                                         return
                                     else:
                                         await event.send(event.plain_result("你写多或者写少了！请重写"))
-                                        logger.info(f"账号{user_name}{user_umo}写多或者写少了！请重写")
+                                        logger.info(f"账号 {user_name}{user_umo} 写多或者写少了！请重写")
                                         return
 
                                 elif answer == "确定":
@@ -242,12 +251,12 @@ class MyPlugin(Star):
                                             await event.send(event.plain_result(
                                                 f"恭喜！你以{controller.mark}分的成绩通过了考核！请加入主群：{self.main_group_id}并退出审核群！"))
                                             logger.info(
-                                                f"恭喜！账号{user_name}{user_umo}以{controller.mark}分的成绩通过了考核！请加入主群：{self.main_group_id}并退出审核群！")
+                                                f"恭喜！账号 {user_name}{user_umo} 以{controller.mark}分的成绩通过了考核！")
                                             if self.send_user_answer:
                                                 try:
                                                     result = event.make_result()
-                                                    result.chain = [Plain(f"✅通过:账号{user_name}{user_umo}以{controller.mark}分的成绩通过了考核！\n答案：\n{controller.user_answer_str}")]
-                                                    logger.info(f"已向群{group_umo}发送{user_umo}的卡片")
+                                                    result.chain = [Plain(f"✅通过:账号 {user_name}{user_umo} 以{controller.mark}分的成绩通过了考核！\n答案：\n{controller.user_answer_str}")]
+                                                    logger.info(f"已向群{group_umo}发送 {user_name}{user_umo} 的卡片")
                                                     await self.context.send_message(group_umo, result)
                                                 except Exception as e:
                                                     await event.send(event.plain_result("消息发送失败，请检查后台日志"))
@@ -259,17 +268,17 @@ class MyPlugin(Star):
                                             await event.send(event.plain_result(
                                                 f"你的成绩{controller.mark}分低于及格线{self.passing_line}分没有通过！请联系管理员处理，或可尝试再次答题"))
                                             logger.info(
-                                                f"账号{user_name}{user_umo}的成绩{controller.mark}分低于及格线{self.passing_line}分没有通过，请自觉退群")
+                                                f"账号 {user_name}{user_umo} 的成绩{controller.mark}分低于及格线{self.passing_line}分没有通过！")
                                             if self.send_user_answer:
                                                 try:
                                                     result = event.make_result()
                                                     result.chain = [Plain(
-                                                        f"❌未通过:账号{user_name}{user_umo}的成绩{controller.mark}分低于及格线{self.passing_line}分，未通过！\n答案：\n{controller.user_answer_str}")]
+                                                        f"❌未通过:账号 {user_name}{user_umo} 的成绩{controller.mark}分低于及格线{self.passing_line}分，未通过！\n答案：\n{controller.user_answer_str}")]
                                                     await self.context.send_message(group_umo, result)
-                                                    logger.info(f"已向群{group_umo}发送{user_umo}的卡片")
+                                                    logger.info(f"已向群 {group_umo} 发送 {user_name}{user_umo} 的卡片")
                                                 except Exception as e:
                                                     await event.send(event.plain_result("消息发送失败，请检查后台日志"))
-                                                    logger.error(f"向群 {group_umo} 发送消息失败: {e}")
+                                                    logger.error(f"向群{group_umo}发送消息失败: {e}")
                                             controller.stop()
                                             del self.active_sessions[user_id]
                                             return
@@ -290,12 +299,12 @@ class MyPlugin(Star):
                                 logger.info(f"账号{user_name}{user_umo}答题超时！结束考核！")
                                 try:
                                     result = event.make_result()
-                                    result.chain = [Plain(f"❌未通过:账号{user_name}{user_umo}作答超时！")]
+                                    result.chain = [Plain(f"❌未通过:账号 {user_name}{user_umo} 作答超时！")]
                                     await self.context.send_message(group_umo, result)
-                                    logger.info(f"已向群{group_umo}发送{user_umo}的卡片")
+                                    logger.info(f"已向群{group_umo}发送 {user_name}{user_umo} 的卡片")
                                 except Exception as e:
                                     await event.send(event.plain_result("消息发送失败，请检查后台日志"))
-                                    logger.error(f"向群 {group_umo} 发送消息失败: {e}")
+                                    logger.error(f"向群{group_umo}发送消息失败: {e}")
                                 if user_id in self.active_sessions:
                                     del self.active_sessions[user_id]
                                 return
@@ -321,12 +330,12 @@ class MyPlugin(Star):
                         # 发送开始答题消息（保留原样）
                         try:
                             result = event.make_result()
-                            result.chain = [Plain(f"账号{user_name}{user_umo}开始答题！")]
+                            result.chain = [Plain(f"账号 {user_name}{user_umo} 开始答题！")]
                             await self.context.send_message(group_umo, result)
-                            logger.info(f"账号{user_name}{user_umo}开始答题！")
+                            logger.info(f"账号 {user_name}{user_umo} 开始答题！")
                         except Exception as e:
                             await event.send(event.plain_result("消息发送失败，请检查后台日志"))
-                            logger.error(f"向群 {group_umo} 发送消息失败: {e}")
+                            logger.error(f"向群{group_umo}发送消息失败: {e}")
                             del self.active_sessions[user_id]
                             return
 
@@ -350,7 +359,7 @@ class MyPlugin(Star):
                                     'answer': q_data['answer']
                                 })
                             except KeyError:
-                                logger.error(f"题库键{key}缺少字段")
+                                logger.error(f"题库键 {key} 缺少字段")
                                 del self.active_sessions[user_id]
                                 return
 
@@ -430,7 +439,7 @@ class MyPlugin(Star):
                                     controller.if_answer = True
                                     controller.state = 'waiting_confirm'
                                     await event.send(event.plain_result(f"已收到答案：{controller.temp_answer}，请输入“确定”提交答案或“跳转N”跳转到指定题目（不会保留当前答案！）"))
-                                    logger.info(f"账号{user_name}{user_umo}提交答案：{controller.temp_answer}")
+                                    logger.info(f"账号 {user_name}{user_umo} 提交答案：{controller.temp_answer}")
                                     return
                                 # 检查是否 "跳转N"
                                 elif user_input.startswith("跳转"):
@@ -454,7 +463,7 @@ class MyPlugin(Star):
                                     controller.temp_answer = new_answer   # 覆盖之前的答案
                                     controller.if_answer = True           # 确保标记为已作答
                                     await event.send(event.plain_result(f"答案已更新为：{new_answer}，请输入“确定”提交或“跳转N”跳转到指定题目（不会保留当前答案！）"))
-                                    logger.info(f"账号{user_name}{user_umo}更新答案：{new_answer}")
+                                    logger.info(f"账号 {user_name}{user_umo} 更新答案：{new_answer}")
                                     return
                                 # 用户输入 "确定"
                                 if user_input == "确定":
@@ -478,7 +487,7 @@ class MyPlugin(Star):
                                         # 全部答完，进入等待最终确认状态
                                         controller.state = 'waiting_finish'
                                         await event.send(event.plain_result("所有题目已答完！请输入“确定”以结束考核并查看成绩"))
-                                        logger.info(f"账号{user_name}{user_umo}已答完所有题，等待最终确认")
+                                        logger.info(f"账号 {user_name}{user_umo} 已答完所有题，等待最终确认")
                                     else:
                                         # 发送下一题，重置状态为等待作答
                                         controller.state = 'waiting_answer'
@@ -522,7 +531,7 @@ class MyPlugin(Star):
                                 q_data = controller.question_list[controller.current_index]
                                 question_text = f"第{idx}题（共{self.finally_questions}题）\n{q_data['question']}\n{q_data['option']}"
                                 await event.send(event.plain_result(question_text))
-                                logger.info(f"已发送第{idx}题给{user_name}{user_umo}")
+                                logger.info(f"已发送第{idx}题给 {user_name}{user_umo} ")
                             except IndexError:
                                 logger.error(f"题目列表越界，当前索引 {controller.current_index}")
                                 await event.send(event.plain_result("题目加载失败，请联系管理员"))
@@ -537,34 +546,34 @@ class MyPlugin(Star):
                                 await event.send(event.plain_result(
                                     f"恭喜！你以{final_score}分的成绩通过了考核！请加入主群：{self.main_group_id}并退出审核群！"
                                 ))
-                                logger.info(f"恭喜！账号{user_name}{user_umo}以{final_score}分的成绩通过了考核！")
+                                logger.info(f"恭喜！账号 {user_name}{user_umo} 以{final_score}分的成绩通过了考核！")
                                 if self.send_user_answer:
                                     try:
                                         result = event.make_result()
                                         result.chain = [Plain(
-                                            f"✅通过:账号{user_name}{user_umo}以{final_score}分的成绩通过了考核！\n答案：\n{controller.user_answer_str}"
+                                            f"✅通过:账号 {user_name}{user_umo} 以{final_score}分的成绩通过了考核！\n答案：\n{controller.user_answer_str}"
                                         )]
                                         await self.context.send_message(group_umo, result)
-                                        logger.info(f"已向群{group_umo}发送{user_umo}的卡片")
+                                        logger.info(f"已向群{group_umo}发送 {user_name}{user_umo} 的卡片")
                                     except Exception as e:
                                         await event.send(event.plain_result("消息发送失败，请检查后台日志"))
-                                        logger.error(f"向群 {group_umo} 发送消息失败: {e}")
+                                        logger.error(f"向群{group_umo}发送消息失败: {e}")
                             else:
                                 await event.send(event.plain_result(
                                     f"你的成绩{final_score}分低于及格线{self.passing_line}分没有通过！请联系管理员处理，或可尝试再次答题"
                                 ))
-                                logger.info(f"账号{user_name}{user_umo}的成绩{final_score}分低于及格线{self.passing_line}分，未通过")
+                                logger.info(f"账号 {user_name}{user_umo} 的成绩{final_score}分低于及格线{self.passing_line}分，未通过")
                                 if self.send_user_answer:
                                     try:
                                         result = event.make_result()
                                         result.chain = [Plain(
-                                            f"❌未通过:账号{user_name}{user_umo}的成绩{final_score}分低于及格线{self.passing_line}分，未通过！\n答案：\n{controller.user_answer_str}"
+                                            f"❌未通过:账号 {user_name}{user_umo} 的成绩{final_score}分低于及格线{self.passing_line}分，未通过！\n答案：\n{controller.user_answer_str}"
                                         )]
                                         await self.context.send_message(group_umo, result)
-                                        logger.info(f"已向群{group_umo}发送{user_umo}的卡片")
+                                        logger.info(f"已向群{group_umo}发送 {user_name}{user_umo} 的卡片")
                                     except Exception as e:
                                         await event.send(event.plain_result("消息发送失败，请检查后台日志"))
-                                        logger.error(f"向群 {group_umo} 发送消息失败: {e}")
+                                        logger.error(f"向群{group_umo}发送消息失败: {e}")
 
                         # ===== 启动会话 =====
                         try:
@@ -573,15 +582,15 @@ class MyPlugin(Star):
                         except TimeoutError:
                             # 超时处理（保留原样）
                             await event.send(event.plain_result("答题超时！结束考核！请联系管理员处理，或可尝试再次答题"))
-                            logger.info(f"账号{user_name}{user_umo}答题超时！结束考核！")
+                            logger.info(f"账号 {user_name}{user_umo} 答题超时！结束考核！")
                             try:
                                 result = event.make_result()
-                                result.chain = [Plain(f"❌未通过:账号{user_name}{user_umo}作答超时！")]
+                                result.chain = [Plain(f"❌未通过:账号 {user_name}{user_umo} 作答超时！")]
                                 await self.context.send_message(group_umo, result)
-                                logger.info(f"已向群{group_umo}发送{user_umo}的卡片")
+                                logger.info(f"已向群{group_umo}发送 {user_name}{user_umo} 的卡片")
                             except Exception as e:
                                 await event.send(event.plain_result("消息发送失败，请检查后台日志"))
-                                logger.error(f"向群 {group_umo} 发送消息失败: {e}")
+                                logger.error(f"向群{group_umo}发送消息失败: {e}")
                             if user_id in self.active_sessions:
                                 del self.active_sessions[user_id]
                             return
@@ -594,14 +603,14 @@ class MyPlugin(Star):
                         finally:
                             event.stop_event()
                 else:
-                    yield event.plain_result(f"你不在群 {self.examine_group_id} 中！请尝试先加群！")
+                    yield event.plain_result(f"你不在群{self.examine_group_id}中！请尝试先加群！")
                     if user_id in self.active_sessions:
                         del self.active_sessions[user_id]
                     return
             except Exception as e:
             # API 报错通常意味着用户不在群中或网络问题
                 logger.error(f"查询成员失败: {e}")
-                yield event.plain_result(f"你不在群 {self.examine_group_id} 中！（或查询失败）请尝试先加群！")
+                yield event.plain_result(f"你不在群{self.examine_group_id}中！（或查询失败）请尝试先加群！")
                 if user_id in self.active_sessions:
                     del self.active_sessions[user_id]
                 return
