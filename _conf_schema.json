@@ -18,7 +18,7 @@
       "bot_name": {
         "description": "BOT名称",
         "type": "string",
-        "hint": "你的bot在astrbot平台上的名称",
+        "hint": "你的 bot 在 Astrbot 上的名称",
         "default": ""
       }
     }
@@ -30,11 +30,11 @@
       "reminder_text": {
         "description": "提示文本",
         "type": "text",
-        "default": "欢迎！请向此bot私聊发送“开始答题”以开始考核"
+        "default": "欢迎！请向此 bot 私聊发送“开始答题”以开始考核"
       },
       "reminder_img": {
         "description": "提示图片",
-        "hint": "填写提示图片的完整路径，默认为空",
+        "hint": "推荐放置于 data/plugin_data/astrbot_plugin_examine 目录下，示例：data/plugin_data/astrbot_plugin_examine/img.jpg",
         "type": "string",
         "default": ""
       },
@@ -110,12 +110,12 @@
   "question_bank": {
     "description": "题库",
     "type": "object",
-    "hint": "请移动文件于data文件夹下，并填写相应的txt文件路径",
+    "hint": "请移动文件于 /data 文件夹下，并填写相应的文件路径",
     "items": {
       "question_bank_file": {
         "description": "题库文件（.json）",
         "type": "string",
-        "hint": "示例：data/question_bank.json",
+        "hint": "推荐放置于 data/plugin_data/astrbot_plugin_examine 目录下，示例：data/plugin_data/astrbot_plugin_examine/question_bank.json",
         "default": ""
       }
     }
