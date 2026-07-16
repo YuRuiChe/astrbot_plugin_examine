@@ -1,5 +1,12 @@
 # 📝 更新日志
 
+## v3.1.0
+- 更改 reminder_img 和 question_bank_file 配置的 hint
+- 插件在初始化时会在 data/plugin_data 目录下创建 /astrbot_plugin_examine 文件夹，推荐将提示图片、题库等配置放置于此目录下
+- 优化了日志输出
+- 优化部分提示文本
+- 更改 README.md
+
 ## v3.0.3
 - 梳理更新日志
 - 优化部分提示文本
@@ -12,20 +19,20 @@
 - 修复在开启逐题发送时无法修改作答答案的bug
 
 ## v3.0.0
-- 将`main_group_id` `examine_group_id` `bot_name`配置整合至`foundation`中
+- 将 main_group_id、examine_group_id、bot_name 配置整合至 foundation 中
 
 ## v2.2.4
-- 更改README.md的内容
-- 更改metadata.yaml中的`desc`字段
+- 更改 README.md 的内容
+- 更改 metadata.yaml 中的 desc 字段
 
 ## v2.2.3
-- 更改README.md的内容
+- 更改 README.md 的内容
 
 ## v2.2.2
 - 修改部分提示文本
 
 ## v2.2.1
-- 优化`self.finally_questions`的逻辑
+- 优化 self.finally_questions 的逻辑
 
 ## v2.2.0
 - 增加逐题发送功能
@@ -35,14 +42,14 @@
 - 为流式输出题目提供基础代码（不可用）
 
 ## v2.1.2
-- 改正代码中`return`的错误用法
+- 改正代码中 return 的错误用法
 
 ## v2.1.1
-- 强化`self.active_sessions`的逻辑
+- 强化 self.active_sessions 的逻辑
 
 ## v2.1.0
-- 新增`stream_output_question`配置
-- 更改`randomly_selected_questions`和`stream_output_question`配置在配置文件中的位置
+- 新增 stream_output_question 配置
+- 更改 randomly_selected_questions 和 stream_output_question 配置在配置文件中的位置
 - 更改会话控制器部分的代码
 - 更改抽题部分的代码
 
@@ -50,9 +57,9 @@
 - 更改README.md的内容
 
 ## v2.0.0
-- 将题库文件格式改为.json
+- 将题库文件格式改为 .json
 - 删除旧题库配置
-- 更改README.md的内容
+- 更改 README.md 的内容
 
 ## v1.7.0
 - 增加发送入群提示前检查是否为审核群的功能，防止在别的群发送出入群提示（类似白名单）
@@ -63,11 +70,11 @@
 ## v1.6.0
 - 添加考前须知
 - 优化引导
-- 新增`read_time`配置
+- 新增 read_time 配置
 
 ## v1.5.0
 - 修改配置文件
-- 新增`card`配置
+- 新增 card 配置
 
 ## v1.4.1
 - 修复新人卡片中新人答案输出错误的问题
@@ -98,7 +105,7 @@
 - 更加稳定，修复了一些已知问题
 
 ## v1.0.1
-- 正式版发布！修复了一些已知问题
+- 修复了一些已知问题
 
 ## v1.0.0
 - 初代版本，bug特别多，不知道要修到什么时候
