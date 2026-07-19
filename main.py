@@ -18,7 +18,7 @@ from psutil import boot_time
 
 
 
-@register("astrbot_plugin_examine", "语芮澈", "简简单单的入群自动考核插件", "v3.1.0", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+@register("astrbot_plugin_examine", "语芮澈", "简简单单的入群自动考核插件", "v3.1.1", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -75,7 +75,7 @@ class MyPlugin(Star):
             return
         # ====================处理群成员入群事件====================
         if raw_message.get("notice_type") == "group_increase":  # 群人数增加 → 新人入群
-            user_id = raw_message.get("user_id")  # 获取新成员的QQ号
+            add_user_id = raw_message.get("user_id")  # 获取新成员的QQ号
             # 默认使用全局欢迎语
             welcome_message = self.reminder_text
             # 确定最终使用的图片
@@ -84,16 +84,16 @@ class MyPlugin(Star):
             if image_to_use:  # 如果有欢迎图片
                 # 判断图片是URL还是本地路径（只能使用本地路径）
                 if image_to_use.startswith("http://") or image_to_use.startswith("https://"):
-                    logger.warning(f"Invalid image URL: {image_to_use}")  # 图片URL无效，记录警告
+                    logger.warning(f"图片URL无效: {image_to_use}")  # 图片URL无效，记录警告
                     # 降级处理：只发送文字，不发图片
                     chain = [
-                        Comp.At(qq=user_id) if self.whether_at else Comp.Plain(""),
+                        Comp.At(qq=add_user_id) if self.whether_at else Comp.Plain(""),
                         Comp.Plain(welcome_message),
                     ]
                 else:
                     # 本地图片：从路径读取
                     chain = [
-                        Comp.At(qq=user_id) if self.whether_at else Comp.Plain(""),
+                        Comp.At(qq=add_user_id) if self.whether_at else Comp.Plain(""),
                         Comp.Plain(welcome_message),
                         Comp.Image.fromFileSystem(image_to_use),
                     ]
@@ -101,7 +101,7 @@ class MyPlugin(Star):
             else:
                 # 无图片：只发送文字欢迎消息
                 chain = [
-                    Comp.At(qq=user_id) if self.whether_at else Comp.Plain(""),
+                    Comp.At(qq=add_user_id) if self.whether_at else Comp.Plain(""),
                     Comp.Plain(welcome_message),
                 ]
                 yield event.chain_result(chain)
