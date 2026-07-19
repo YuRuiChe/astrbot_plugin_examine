@@ -1,9 +1,14 @@
 # 📝 更新日志
 
+## v3.1.1
+- 优化入群提示文本
+- 优化日志输出
+
+
 ## v3.1.0
 - 更改 reminder_img 和 question_bank_file 配置的 hint
 - 插件在初始化时会在 data/plugin_data 目录下创建 /astrbot_plugin_examine 文件夹，推荐将提示图片、题库等配置放置于此目录下
-- 优化了日志输出
+- 优化日志输出
 - 优化部分提示文本
 - 更改 README.md
 
