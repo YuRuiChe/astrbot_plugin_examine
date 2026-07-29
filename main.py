@@ -8,15 +8,15 @@ from astrbot.core.utils.session_waiter import session_waiter, SessionController 
 from astrbot.core.utils.astrbot_path import get_astrbot_data_path
 import json
 import os
-import time
 from itertools import islice
 import random
 from pathlib import Path
 from psutil import boot_time
+import asyncio
 
 
 
-@register("astrbot_plugin_examine", "语芮澈", "简简单单的入群自动考核插件", "v3.1.2", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+@register("astrbot_plugin_examine", "语芮澈", "简简单单的入群自动考核插件", "v3.1.3", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -188,7 +188,7 @@ class MyPlugin(Star):
                                 return
                             yield event.plain_result(f"考前须知：\n\n请使用“作答”指令以答题，“确定”指令以结束答题\n示例：\n作答abcabcabcabc（前面一定要有“作答”二字！）\n\n总共有{self.finally_questions}道题，写多写少会提示\n请于{self.limited_time}秒内完成答题\n\n题目将于{self.read_time}秒后发送")
                             logger.info("已发送考前须知！")
-                            time.sleep(self.read_time)
+                            await asyncio.sleep(self.read_time)
                             yield event.plain_result(f"考核开始，以下为题目，请于{self.limited_time}秒内完成，现在开始计时\n\n{str(out)}")
                             logger.info("已发送题目！")
                             # ====================注册会话控制器====================
