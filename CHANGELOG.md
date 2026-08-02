@@ -1,5 +1,8 @@
 # 📝 更新日志
 
+## v3.1.4
+- 修改 logo.png，即插件 logo
+
 ## v3.1.3
 - 优化考前须知部分代码，将 time.sleep 改为 asyncio.sleep 以消除阻塞
 
