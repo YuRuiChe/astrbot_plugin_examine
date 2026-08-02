@@ -16,7 +16,7 @@ import asyncio
 
 
 
-@register("astrbot_plugin_examine", "语芮澈", "简简单单的入群自动考核插件", "v3.1.3", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+@register("astrbot_plugin_examine", "语芮澈", "简简单单的入群自动考核插件", "v3.1.4", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
