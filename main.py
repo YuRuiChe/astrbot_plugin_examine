@@ -16,7 +16,7 @@ import asyncio
 
 
 
-@register("astrbot_plugin_examine", "语芮澈", "简简单单的入群自动考核插件", "v3.1.4", "https://github.com/YuRuiChe/astrbot_plugin_examine")
+@register("astrbot_plugin_examine", "语芮澈", "简简单单的入群自动考核插件", "v3.1.5", "https://github.com/YuRuiChe/astrbot_plugin_examine")
 class MyPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -367,7 +367,7 @@ class MyPlugin(Star):
                             logger.warning(f"实际题目数量{actual_total}少于设定{self.finally_questions}，将按实际数量进行")
                             self.finally_questions = actual_total
                             
-                        yield event.plain_result(f"考前须知：\n\n请使用“作答”指令以答题，“确定”指令以结束答题，“跳转“指令以跳转题目\n示例：\n作答a（表示填写第一道题的答案）\n跳转1（表示跳转到第1题）\n\n总共有{self.finally_questions}道题\n请于{self.limited_time}秒内完成答题\n\n阅读完本消息后可发送任意消息以开始答题")
+                        yield event.plain_result(f"考前须知：\n\n请使用“作答”指令以答题，“确定”指令以结束答题，“跳转“指令以跳转题目\n示例：\n作答a（表示填写答案为a）\n跳转1（表示跳转到第1题）\n\n总共有{self.finally_questions}道题\n请于{self.limited_time}秒内完成答题\n\n阅读完本消息后可发送任意消息以开始答题")
                         logger.info("已发送考前须知！")
 
                         # ==================== 会话控制器（逐题交互） ====================
@@ -436,7 +436,7 @@ class MyPlugin(Star):
                                     controller.temp_answer = user_input[2:]
                                     controller.if_answer = True
                                     controller.state = 'waiting_confirm'
-                                    await event.send(event.plain_result(f"已收到答案：{controller.temp_answer}，请输入“确定”提交答案或“跳转N”跳转到指定题目（不会保留当前答案！）"))
+                                    await event.send(event.plain_result(f"已收到答案：{controller.temp_answer}，请输入“确定”提交答案或“跳转N”（N为题号）跳转到指定题目（不会保留当前答案！）"))
                                     logger.info(f"账号 {user_name}{user_umo} 提交答案：{controller.temp_answer}")
                                     return
                                 # 检查是否 "跳转N"
@@ -447,10 +447,10 @@ class MyPlugin(Star):
                                         await jump_to_question(target)
                                         return
                                     else:
-                                        await event.send(event.plain_result("格式错误！请使用“跳转N”，N为数字（如跳转3）"))
+                                        await event.send(event.plain_result("格式错误！请使用“跳转N”（N为题号）跳转到指定题目（不会保留当前答案！）"))
                                         return
                                 else:
-                                    await event.send(event.plain_result("请先输入“作答X”回答当前题目，或“跳转N”跳转到指定题目（不会保留当前答案！）"))
+                                    await event.send(event.plain_result("请先输入“作答X”回答当前题目（X为选项，如a/b/c/d），或“跳转N”（N为题号）跳转到指定题目（不会保留当前答案！）"))
                                     return
 
                             # 状态2: 等待用户确认答案
@@ -460,13 +460,13 @@ class MyPlugin(Star):
                                     new_answer = user_input[2:]
                                     controller.temp_answer = new_answer   # 覆盖之前的答案
                                     controller.if_answer = True           # 确保标记为已作答
-                                    await event.send(event.plain_result(f"答案已更新为：{new_answer}，请输入“确定”提交或“跳转N”跳转到指定题目（不会保留当前答案！）"))
+                                    await event.send(event.plain_result(f"答案已更新为：{new_answer}，请输入“确定”提交或“跳转N”（N为题号）跳转到指定题目（不会保留当前答案！）"))
                                     logger.info(f"账号 {user_name}{user_umo} 更新答案：{new_answer}")
                                     return
                                 # 用户输入 "确定"
                                 if user_input == "确定":
                                     if not controller.if_answer:
-                                        await event.send(event.plain_result("您还未作答，请先输入“作答X”"))
+                                        await event.send(event.plain_result("您还未作答，请先输入“作答X”回答当前题目（X为选项，如a/b/c/d）"))
                                         return
                                     # 判题
                                     correct_answer = controller.question_list[controller.current_index]['answer'].strip()
@@ -503,10 +503,10 @@ class MyPlugin(Star):
                                         await jump_to_question(target)
                                         return
                                     else:
-                                        await event.send(event.plain_result("格式错误！请使用“跳转N”跳转到指定题目（不会保留当前答案！），N为数字"))
+                                        await event.send(event.plain_result("格式错误！请使用“跳转N”（N为题号）跳转到指定题目（不会保留当前答案！）"))
                                         return
                                 else:
-                                    await event.send(event.plain_result("请输入“确定”提交当前答案，或“跳转N”跳转到指定题目（不会保留当前答案！）"))
+                                    await event.send(event.plain_result("请输入“确定”提交当前答案，或“跳转N”（N为题号）跳转到指定题目（不会保留当前答案！）"))
                                     return
 
                             # 状态3: 等待最终确认（所有题已答完）
